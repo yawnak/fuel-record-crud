@@ -15,6 +15,8 @@ type FuelRecord struct {
 	createdAt        time.Time
 }
 
+// this method creates a first record without prev or next.
+// Should be used only when creating a new car.
 func newFuelRecord(currentFuel float64) FuelRecord {
 	return FuelRecord{
 		id:          uuid.New(),
