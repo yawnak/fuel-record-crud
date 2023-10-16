@@ -1,0 +1,21 @@
+[build]
+# Just plain old shell command. You could use `make` as well.
+cmd = "go build -o ./bin/app ./cmd/app"
+# Binary file yields from `cmd`.
+bin = "./bin/app"
+# Customize binary.
+full_bin = "APP_ENV=dev APP_USER=air ./bin/app"
+# Watch these filename extensions.
+include_ext = ["go", "tpl", "tmpl", "html"]
+# Ignore these filename extensions or directories.
+exclude_dir = ["assets", "tmp", "vendor"]
+# Watch these directories if you specified.
+include_dir = ["cmd", "internal", "config", "api", "pkg"]
+# Exclude files.
+exclude_file = []
+# It's not necessary to trigger build each time file changes if it's too frequent.
+delay = 3000 # ms
+# Stop to run old binary when build on local.
+kill_delay = 500 # ms
+# If true, it will stop the old build when a new build starts
+stop = true

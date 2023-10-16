@@ -7,4 +7,4 @@ tasks:
       - go install github.com/cosmtrek/air@latest
       - echo "Installed air"
     desc: "Installs air" 
-    internal: true
+    silent: false

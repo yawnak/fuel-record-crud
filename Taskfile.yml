@@ -14,6 +14,7 @@ tasks:
       - "liveserver"
     cmds:
       - echo "Starting liveserver..."
+      - air -c .air.toml run ./cmd/server/main.go
     desc: "Starts the liveserver"
   install-tools:
     deps:
