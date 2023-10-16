@@ -20,6 +20,18 @@ func New(make, model string, year int64, currentFuel float64) Car {
 	}
 }
 
+func UnmarshalCarFromDatabase(
+	id uuid.UUID, make string, model string, year int64, lastFuelRecord FuelRecord,
+) Car {
+	return Car{
+		id:             id,
+		make:           make,
+		model:          model,
+		year:           year,
+		lastFuelRecord: lastFuelRecord,
+	}
+}
+
 func (car *Car) Id() uuid.UUID {
 	return car.id
 }
