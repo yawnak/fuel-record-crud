@@ -19,7 +19,3 @@ func New(make, model string, year int64, currentFuel float64) Car {
 		lastFuelRecord: newFuelRecord(currentFuel),
 	}
 }
-
-func (c *Car) Validate() error {
-	return nil
-}
