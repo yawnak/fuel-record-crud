@@ -25,6 +25,15 @@ func newFuelRecord(currentFuel float64) FuelRecord {
 	}
 }
 
+// this method should only be used when unmarshalling from database
+// can create an invalid record
+func UnmarshalFuelRecordFromDatabase(
+	id uuid.UUID, previousRecordId uuid.NullUUID, nextRecordId uuid.NullUUID,
+	currentFuel float64, difference float64, createdAt time.Time,
+) FuelRecord {
+	return FuelRecord{}
+}
+
 func (fuel FuelRecord) NewNext(difference float64) (FuelRecord, error) {
 	var zero FuelRecord
 	if fuel.nextRecordId.Valid {
