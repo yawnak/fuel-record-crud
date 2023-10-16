@@ -1,9 +1,13 @@
 version: "3"
 
+vars:
+  PATH_TO_APP: "./cmd/app/main.go"
+  BINARY_PATH: "./bin/app.exe"
+
 tasks:
   build:
     cmds:
       - echo "Building go app..."
-      - go build -o bin/hello.exe ./cmd/app/main.go
+      - go build -o {{ .BINARY_PATH }} {{ .PATH_TO_APP }}
     silent: true
-      
+    desc: "Builds the go app"

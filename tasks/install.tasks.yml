@@ -1,0 +1,10 @@
+version: "3"
+
+tasks:
+  air:
+    cmds:
+      - echo "Installing air..."
+      - go install github.com/cosmtrek/air@latest
+      - echo "Installed air"
+    desc: "Installs air" 
+    internal: true

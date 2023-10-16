@@ -1,16 +1,23 @@
 version: '3'
 
-vars:
-  GREETING: Hello, World!
-
 includes:
   go: tasks/go.tasks.yml
+  atlas: tasks/atlas.tasks.yml
+  install: tasks/install.tasks.yml
+
+silent: true
 
 tasks:
   default:
+    label: "liveserver"
+    aliases: 
+      - "liveserver"
     cmds:
-      - echo "{{ .GREETING}}"
-    silent: true
+      - echo "Starting liveserver..."
+    desc: "Starts the liveserver"
+  install-tools:
+    deps:
+      - "install:air"
 
 
 

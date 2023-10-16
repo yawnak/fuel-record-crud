@@ -1,0 +1,7 @@
+version: "3"
+
+tasks:
+  hash:
+    prompt: "Enter a string to hash: "
+    cmd: atlas hash
+    desc: "Recalculate SQL schema hash"
