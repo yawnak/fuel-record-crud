@@ -18,8 +18,8 @@ func (e SError) Error() string {
 	return e.Err.Error()
 }
 
-func NewInternal(err error) SError {
-	return SError{
+func NewInternal(err error) *SError {
+	return &SError{
 		Code:    http.StatusInternalServerError,
 		ErrType: TypeInternal,
 		Err:     err,
