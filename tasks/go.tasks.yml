@@ -1,0 +1,9 @@
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - echo "Building go app..."
+      - go build -o bin/hello.exe ./cmd/app/main.go
+    silent: true
+      
