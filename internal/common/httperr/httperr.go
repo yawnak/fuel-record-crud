@@ -1,6 +1,9 @@
 package httperr
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 var (
 	TypeInternal = "internal"
@@ -8,14 +11,15 @@ var (
 )
 
 type SError struct {
-	Code           int
-	ErrType        string
-	DisplayMessage string
-	Err            error
+	Code           int    `json:"code"`
+	ErrType        string `json:"error_type"`
+	DisplayMessage string `json:"message"`
+	Err            error  `json:"-"`
 }
 
-func (e SError) Error() string {
-	return e.Err.Error()
+func (e *SError) Error() string {
+	data, _ := json.Marshal(e)
+	return string(data)
 }
 
 func NewInternal(err error) *SError {

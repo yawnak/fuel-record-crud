@@ -1,6 +1,7 @@
 package erradapt
 
 import (
+	"github.com/samber/lo"
 	"github.com/yawnak/fuel-record-crud/internal/common/httperr"
 )
 
@@ -17,6 +18,9 @@ func (adapter *Adapter) registerAdapterFunc(fn ErrAdapterFunc) {
 func (adapter *Adapter) Adapt(err error) *httperr.SError {
 	if err == nil {
 		return nil
+	}
+	if serr, ok := lo.ErrorsAs[*httperr.SError](err); ok {
+		return serr
 	}
 	for _, fn := range adapter.errs {
 		if adaptedErr := fn(err); adaptedErr != nil {
