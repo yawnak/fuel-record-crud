@@ -31,7 +31,7 @@ func unmarshalCar(car car.Car) carModel {
 		Make:             car.Make(),
 		Model:            car.Model(),
 		Year:             car.Year(),
-		LastFuelRecordId: car.LastFuelRecord().Id().String(),
+		LastFuelRecordId: car.CurrentFuelRecord().Id().String(),
 	}
 }
 

@@ -3,20 +3,21 @@ package car
 import "github.com/google/uuid"
 
 type Car struct {
-	id             uuid.UUID
-	make           string
-	model          string
-	year           int64
-	lastFuelRecord FuelRecord
+	id                    uuid.UUID
+	make                  string
+	model                 string
+	year                  int64
+	currentFuelRecord     FuelRecord
+	currentOdometerRecord OdometerRecord
 }
 
 func New(make, model string, year int64, currentFuel float64) Car {
 	return Car{
-		id:             uuid.New(),
-		make:           make,
-		model:          model,
-		year:           year,
-		lastFuelRecord: newFuelRecord(currentFuel),
+		id:                uuid.New(),
+		make:              make,
+		model:             model,
+		year:              year,
+		currentFuelRecord: newFuelRecord(currentFuel),
 	}
 }
 
@@ -24,11 +25,11 @@ func UnmarshalCarFromDatabase(
 	id uuid.UUID, make string, model string, year int64, lastFuelRecord FuelRecord,
 ) Car {
 	return Car{
-		id:             id,
-		make:           make,
-		model:          model,
-		year:           year,
-		lastFuelRecord: lastFuelRecord,
+		id:                id,
+		make:              make,
+		model:             model,
+		year:              year,
+		currentFuelRecord: lastFuelRecord,
 	}
 }
 
@@ -48,8 +49,12 @@ func (car *Car) Year() int64 {
 	return car.year
 }
 
-func (car *Car) LastFuelRecord() FuelRecord {
-	return car.lastFuelRecord
+func (car *Car) CurrentFuelRecord() FuelRecord {
+	return car.currentFuelRecord
+}
+
+func (car *Car) CurrentOdometerRecord() OdometerRecord {
+	return car.currentOdometerRecord
 }
 
 func (car *Car) SetMake(make string) {
