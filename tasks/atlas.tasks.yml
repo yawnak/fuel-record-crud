@@ -1,7 +1,17 @@
 version: "3"
 
+vars:
+  PATH_TO_SCHEMA: "./schema"
+
 tasks:
+  new:
+    desc: "Create a new migration"
+    interactive: true
+    silent: true
+    cmds: 
+      - 'read -p "Enter the migration name: " migrationName;
+        atlas migrate new $migrationName --dir file://{{.PATH_TO_SCHEMA}}'
   hash:
-    prompt: "Enter a string to hash: "
-    cmd: atlas hash
     desc: "Recalculate SQL schema hash"
+    cmd: atlas migrate hash --dir file://{{.PATH_TO_SCHEMA}}
+    silent: true
