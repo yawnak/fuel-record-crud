@@ -15,8 +15,16 @@ type CarRepository interface {
 }
 
 type FuelRecordRepository interface {
-	Get(id uuid.UUID) (FuelRecord, error)
-	GetAll() ([]FuelRecord, error)
-	GetCarRecords(carId uuid.UUID) ([]FuelRecord, error)
-	Create(record FuelRecord) (FuelRecord, error)
+	Get(fuelRecordId uuid.UUID) (*FuelRecord, error)
+	GetLastForCar(carId uuid.UUID) (*FuelRecord, error)
+}
+
+type OdometerRecordRepository interface {
+	Get(odometerRecordId uuid.UUID) (*OdometerRecord, error)
+	GetLastForCar(carId uuid.UUID) (*OdometerRecord, error)
+}
+
+type FuelHistoryRepository interface {
+	GetByCarId(carId uuid.UUID) (*FuelHistory, error)
+	Update(start *FuelRecord, fuelHistory *FuelHistory) error
 }

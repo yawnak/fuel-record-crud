@@ -27,11 +27,11 @@ type fuelRecordModel struct {
 
 func unmarshalCar(car car.Car) carModel {
 	return carModel{
-		CarId:            car.Id().String(),
-		Make:             car.Make(),
-		Model:            car.Model(),
-		Year:             car.Year(),
-		LastFuelRecordId: car.CurrentFuelRecord().Id().String(),
+		CarId: car.Id().String(),
+		Make:  car.Make(),
+		Model: car.Model(),
+		Year:  car.Year(),
+		//LastFuelRecordId: car.CurrentFuelRecord().Id().String(),
 	}
 }
 

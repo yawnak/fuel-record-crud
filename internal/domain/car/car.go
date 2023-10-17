@@ -1,23 +1,31 @@
 package car
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/pkg/history"
+)
 
+type (
+	FuelHistory     history.History[*FuelRecord]
+	OdometerHistory history.History[*OdometerRecord]
+)
 type Car struct {
-	id                    uuid.UUID
-	make                  string
-	model                 string
-	year                  int64
-	currentFuelRecord     FuelRecord
-	currentOdometerRecord OdometerRecord
+	id              uuid.UUID
+	make            string
+	model           string
+	year            int64
+	fuelHistory     FuelHistory
+	odometerHistory OdometerHistory
+	//currentOdometerRecord History[*OdometerRecord]
 }
 
 func New(make, model string, year int64, currentFuel float64) Car {
 	return Car{
-		id:                uuid.New(),
-		make:              make,
-		model:             model,
-		year:              year,
-		currentFuelRecord: newFuelRecord(currentFuel),
+		id:    uuid.New(),
+		make:  make,
+		model: model,
+		year:  year,
+		//currentFuelRecord: newFuelRecord(currentFuel),
 	}
 }
 
@@ -25,11 +33,11 @@ func UnmarshalCarFromDatabase(
 	id uuid.UUID, make string, model string, year int64, lastFuelRecord FuelRecord,
 ) Car {
 	return Car{
-		id:                id,
-		make:              make,
-		model:             model,
-		year:              year,
-		currentFuelRecord: lastFuelRecord,
+		id:    id,
+		make:  make,
+		model: model,
+		year:  year,
+		//currentFuelRecord: lastFuelRecord,
 	}
 }
 
@@ -49,13 +57,13 @@ func (car *Car) Year() int64 {
 	return car.year
 }
 
-func (car *Car) CurrentFuelRecord() FuelRecord {
-	return car.currentFuelRecord
-}
+// func (car *Car) CurrentFuelRecord() FuelRecord {
+// 	return
+// }
 
-func (car *Car) CurrentOdometerRecord() OdometerRecord {
-	return car.currentOdometerRecord
-}
+// func (car *Car) CurrentOdometerRecord() OdometerRecord {
+// 	return car.currentOdometerRecord
+// }
 
 func (car *Car) SetMake(make string) {
 	car.make = make

@@ -11,3 +11,7 @@ var (
 var (
 	ErrOdometerNegativeDifference = errors.New("odometer negative difference")
 )
+
+var (
+
+)

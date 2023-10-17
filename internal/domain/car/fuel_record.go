@@ -31,24 +31,36 @@ func UnmarshalFuelRecordFromDatabase(
 	id uuid.UUID, previousRecordId uuid.NullUUID, nextRecordId uuid.NullUUID,
 	currentFuel float64, difference float64, createdAt time.Time,
 ) FuelRecord {
-	return FuelRecord{}
+	return FuelRecord{
+		id:               id,
+		previousRecordId: previousRecordId,
+		nextRecordId:     nextRecordId,
+		currentFuel:      currentFuel,
+		difference:       difference,
+		createdAt:        createdAt}
 }
 
-func (fuel FuelRecord) NewNext(difference float64) (FuelRecord, error) {
-	var zero FuelRecord
-	if fuel.nextRecordId.Valid {
-		return zero, ErrNextRecordAlreadyExists
+func (record *FuelRecord) NewNext(difference float64) (*FuelRecord, error) {
+	if record.nextRecordId.Valid {
+		return nil, ErrNextRecordAlreadyExists
 	}
-	return FuelRecord{
+
+	newRecord := FuelRecord{
 		id: uuid.New(),
 		previousRecordId: uuid.NullUUID{
 			Valid: true,
-			UUID:  uuid.New(),
+			UUID:  record.id,
 		},
 		difference:  difference,
-		currentFuel: fuel.currentFuel + difference,
+		currentFuel: record.currentFuel + difference,
 		createdAt:   time.Now().UTC(),
-	}, nil
+	}
+
+	record.nextRecordId = uuid.NullUUID{
+		Valid: true,
+		UUID:  newRecord.id,
+	}
+	return &newRecord, nil
 }
 
 func (fuel FuelRecord) Id() uuid.UUID {
@@ -73,4 +85,12 @@ func (fuel FuelRecord) Difference() float64 {
 
 func (fuel FuelRecord) CreatedAt() time.Time {
 	return fuel.createdAt
+}
+
+func (fuel FuelRecord) IsFirst() bool {
+	return fuel.previousRecordId.Valid
+}
+
+func (fuel FuelRecord) IsLast() bool {
+	return fuel.nextRecordId.Valid
 }
