@@ -5,7 +5,7 @@ includes:
   atlas: tasks/atlas.tasks.yml
   install: tasks/install.tasks.yml
 
-silent: true
+silent: false
 
 tasks:
   default:
