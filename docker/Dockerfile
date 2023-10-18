@@ -23,8 +23,6 @@ WORKDIR /app
 
 #copy configurations
 COPY configs ./configs
-COPY .env ./
-COPY secrets.env ./
 
 #copy application binary
 COPY --from=goapp /build /build
