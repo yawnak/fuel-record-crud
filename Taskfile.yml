@@ -4,6 +4,7 @@ includes:
   go: tasks/go.tasks.yml
   atlas: tasks/atlas.tasks.yml
   install: tasks/install.tasks.yml
+  docker: tasks/docker.tasks.yml
 
 silent: false
 

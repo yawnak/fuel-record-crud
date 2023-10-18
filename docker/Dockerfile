@@ -14,7 +14,7 @@ COPY configs ./configs
 COPY internal ./internal
 COPY pkg ./pkg
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /build ./cmd/web
+RUN CGO_ENABLED=0 GOOS=linux go build -o /build ./cmd/app
 
 # use distroless to make smaller image
 FROM gcr.io/distroless/base-debian11
