@@ -12,11 +12,7 @@ RUN go mod verify
 COPY cmd ./cmd
 COPY configs ./configs
 COPY internal ./internal
-COPY migrations ./migrations
 COPY pkg ./pkg
-COPY schema ./schema
-COPY .env ./
-COPY secrets.env ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /build ./cmd/web
 
