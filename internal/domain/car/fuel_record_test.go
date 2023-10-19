@@ -96,7 +96,7 @@ func TestFuelRecordNewNext(t *testing.T) {
 	}
 
 	for i, v := range cases {
-		rec, err := v.start.NewNext(v.difference)
+		rec, err := v.start.newNext(v.difference)
 		if err != v.expectErr {
 			t.Errorf("case %d: expected error %v, got %v", i, v.expectErr, err)
 		}

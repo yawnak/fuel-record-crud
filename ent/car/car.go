@@ -68,7 +68,7 @@ var (
 	// ModelValidator is a validator for the "model" field. It is called by the builders before save.
 	ModelValidator func(string) error
 	// YearValidator is a validator for the "year" field. It is called by the builders before save.
-	YearValidator func(int8) error
+	YearValidator func(int32) error
 )
 
 // OrderOption defines the ordering options for the Car queries.

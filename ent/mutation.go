@@ -40,8 +40,8 @@ type CarMutation struct {
 	id                      *uuid.UUID
 	make                    *string
 	model                   *string
-	year                    *int8
-	addyear                 *int8
+	year                    *int32
+	addyear                 *int32
 	clearedFields           map[string]struct{}
 	fuel_records            map[uuid.UUID]struct{}
 	removedfuel_records     map[uuid.UUID]struct{}
@@ -231,13 +231,13 @@ func (m *CarMutation) ResetModel() {
 }
 
 // SetYear sets the "year" field.
-func (m *CarMutation) SetYear(i int8) {
+func (m *CarMutation) SetYear(i int32) {
 	m.year = &i
 	m.addyear = nil
 }
 
 // Year returns the value of the "year" field in the mutation.
-func (m *CarMutation) Year() (r int8, exists bool) {
+func (m *CarMutation) Year() (r int32, exists bool) {
 	v := m.year
 	if v == nil {
 		return
@@ -248,7 +248,7 @@ func (m *CarMutation) Year() (r int8, exists bool) {
 // OldYear returns the old "year" field's value of the Car entity.
 // If the Car object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CarMutation) OldYear(ctx context.Context) (v int8, err error) {
+func (m *CarMutation) OldYear(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldYear is only allowed on UpdateOne operations")
 	}
@@ -263,7 +263,7 @@ func (m *CarMutation) OldYear(ctx context.Context) (v int8, err error) {
 }
 
 // AddYear adds i to the "year" field.
-func (m *CarMutation) AddYear(i int8) {
+func (m *CarMutation) AddYear(i int32) {
 	if m.addyear != nil {
 		*m.addyear += i
 	} else {
@@ -272,7 +272,7 @@ func (m *CarMutation) AddYear(i int8) {
 }
 
 // AddedYear returns the value that was added to the "year" field in this mutation.
-func (m *CarMutation) AddedYear() (r int8, exists bool) {
+func (m *CarMutation) AddedYear() (r int32, exists bool) {
 	v := m.addyear
 	if v == nil {
 		return
@@ -491,7 +491,7 @@ func (m *CarMutation) SetField(name string, value ent.Value) error {
 		m.SetModel(v)
 		return nil
 	case car.FieldYear:
-		v, ok := value.(int8)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -528,7 +528,7 @@ func (m *CarMutation) AddedField(name string) (ent.Value, bool) {
 func (m *CarMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case car.FieldYear:
-		v, ok := value.(int8)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

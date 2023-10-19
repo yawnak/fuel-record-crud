@@ -65,7 +65,7 @@ func Model(v string) predicate.Car {
 }
 
 // Year applies equality check predicate on the "year" field. It's identical to YearEQ.
-func Year(v int8) predicate.Car {
+func Year(v int32) predicate.Car {
 	return predicate.Car(sql.FieldEQ(FieldYear, v))
 }
 
@@ -200,42 +200,42 @@ func ModelContainsFold(v string) predicate.Car {
 }
 
 // YearEQ applies the EQ predicate on the "year" field.
-func YearEQ(v int8) predicate.Car {
+func YearEQ(v int32) predicate.Car {
 	return predicate.Car(sql.FieldEQ(FieldYear, v))
 }
 
 // YearNEQ applies the NEQ predicate on the "year" field.
-func YearNEQ(v int8) predicate.Car {
+func YearNEQ(v int32) predicate.Car {
 	return predicate.Car(sql.FieldNEQ(FieldYear, v))
 }
 
 // YearIn applies the In predicate on the "year" field.
-func YearIn(vs ...int8) predicate.Car {
+func YearIn(vs ...int32) predicate.Car {
 	return predicate.Car(sql.FieldIn(FieldYear, vs...))
 }
 
 // YearNotIn applies the NotIn predicate on the "year" field.
-func YearNotIn(vs ...int8) predicate.Car {
+func YearNotIn(vs ...int32) predicate.Car {
 	return predicate.Car(sql.FieldNotIn(FieldYear, vs...))
 }
 
 // YearGT applies the GT predicate on the "year" field.
-func YearGT(v int8) predicate.Car {
+func YearGT(v int32) predicate.Car {
 	return predicate.Car(sql.FieldGT(FieldYear, v))
 }
 
 // YearGTE applies the GTE predicate on the "year" field.
-func YearGTE(v int8) predicate.Car {
+func YearGTE(v int32) predicate.Car {
 	return predicate.Car(sql.FieldGTE(FieldYear, v))
 }
 
 // YearLT applies the LT predicate on the "year" field.
-func YearLT(v int8) predicate.Car {
+func YearLT(v int32) predicate.Car {
 	return predicate.Car(sql.FieldLT(FieldYear, v))
 }
 
 // YearLTE applies the LTE predicate on the "year" field.
-func YearLTE(v int8) predicate.Car {
+func YearLTE(v int32) predicate.Car {
 	return predicate.Car(sql.FieldLTE(FieldYear, v))
 }
 

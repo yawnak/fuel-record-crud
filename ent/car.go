@@ -22,7 +22,7 @@ type Car struct {
 	// Model holds the value of the "model" field.
 	Model string `json:"model,omitempty"`
 	// Year holds the value of the "year" field.
-	Year int8 `json:"year,omitempty"`
+	Year int32 `json:"year,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CarQuery when eager-loading is set.
 	Edges        CarEdges `json:"edges"`
@@ -106,7 +106,7 @@ func (c *Car) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field year", values[i])
 			} else if value.Valid {
-				c.Year = int8(value.Int64)
+				c.Year = int32(value.Int64)
 			}
 		default:
 			c.selectValues.Set(columns[i], values[i])

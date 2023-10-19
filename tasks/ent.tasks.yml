@@ -1,14 +1,22 @@
 version: "3"
 
+vars:
+  PATH_TO_SCHEMA: "./schema"
 
 tasks:
   generate:
     desc: "Generates ent ORM files"
     cmds:
       - go generate ./ent
+    silent: true
   new-migration:
     desc: "Create a new migration"
     cmds:
       - 'read -p "Enter the migration name: " migrationName;
         atlas migrate diff "$migrationName" --dir "file://./schema" --to "ent://ent/schema" --dev-url "docker://postgres/15/test?search_path=public"'
     interactive: true
+    silent: true
+  migrate-apply:
+    desc: "Apply migrations"
+    cmds:
+      - 'atlas migrate apply --dir "file://./schema" --url "postgres://myuser:mypassword@localhost:5432/cars?search_path=public&sslmode=disable"'

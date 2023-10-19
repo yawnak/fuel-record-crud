@@ -13,7 +13,7 @@ var (
 		{Name: "car_id", Type: field.TypeUUID},
 		{Name: "make", Type: field.TypeString},
 		{Name: "model", Type: field.TypeString},
-		{Name: "year", Type: field.TypeInt8},
+		{Name: "year", Type: field.TypeInt32},
 	}
 	// CarsTable holds the schema information for the "cars" table.
 	CarsTable = &schema.Table{

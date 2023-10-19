@@ -15,7 +15,7 @@ type OdometerRecord struct {
 	createdAt         time.Time
 }
 
-func (record *OdometerRecord) NewNext(difference float64) (*OdometerRecord, error) {
+func (record *OdometerRecord) newNext(difference float64) (*OdometerRecord, error) {
 	if difference < 0 {
 		return nil, ErrOdometerNegativeDifference
 	}

@@ -1,7 +1,7 @@
 package repoadapt
 
 import (
-	"time"
+	"context"
 
 	"github.com/yawnak/fuel-record-crud/ent"
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
@@ -86,14 +86,7 @@ type CarRepositoryPSQL struct {
 	client *ent.Client
 }
 
-func (repo *CarRepositoryPSQL) CreateCar(c car.Car) error {
-	repo.client.FuelRecord.Create().
-		SetCurrentFuelLiters(0).
-		SetDifference(0).
-		SetCreatedAt(time.Now())
-	repo.client.Car.Create().
-		SetID(c.Id()).
-		SetMake(c.Make()).
-		SetModel(c.Model()).
-		SetYear(c.Year())
+func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c car.Car) error {
+	
+	return nil
 }

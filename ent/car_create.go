@@ -35,7 +35,7 @@ func (cc *CarCreate) SetModel(s string) *CarCreate {
 }
 
 // SetYear sets the "year" field.
-func (cc *CarCreate) SetYear(i int8) *CarCreate {
+func (cc *CarCreate) SetYear(i int32) *CarCreate {
 	cc.mutation.SetYear(i)
 	return cc
 }
@@ -178,7 +178,7 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 		_node.Model = value
 	}
 	if value, ok := cc.mutation.Year(); ok {
-		_spec.SetField(car.FieldYear, field.TypeInt8, value)
+		_spec.SetField(car.FieldYear, field.TypeInt32, value)
 		_node.Year = value
 	}
 	if nodes := cc.mutation.FuelRecordsIDs(); len(nodes) > 0 {

@@ -1,4 +1,4 @@
-package history
+package car
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 type Historable[T any] interface {
 	comparable
-	NewNext(difference float64) (T, error)
+	newNext(difference float64) (T, error)
 	IsFirst() bool
 	IsLast() bool
 }
@@ -31,7 +31,7 @@ func (history *History[H]) AddRecord(difference float64) error {
 	if !head.IsLast() {
 		return ErrHeadIsNotLast
 	}
-	newHead, err := head.NewNext(difference)
+	newHead, err := head.newNext(difference)
 	if err != nil {
 		return fmt.Errorf("error in head.NewNext: %w", err)
 	}

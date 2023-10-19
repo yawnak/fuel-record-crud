@@ -18,7 +18,7 @@ func (Car) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).StorageKey("car_id").Immutable(),
 		field.String("make").NotEmpty(),
 		field.String("model").NotEmpty(),
-		field.Int8("year").Positive(),
+		field.Int32("year").Positive(),
 	}
 }
 

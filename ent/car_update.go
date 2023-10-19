@@ -43,14 +43,14 @@ func (cu *CarUpdate) SetModel(s string) *CarUpdate {
 }
 
 // SetYear sets the "year" field.
-func (cu *CarUpdate) SetYear(i int8) *CarUpdate {
+func (cu *CarUpdate) SetYear(i int32) *CarUpdate {
 	cu.mutation.ResetYear()
 	cu.mutation.SetYear(i)
 	return cu
 }
 
 // AddYear adds i to the "year" field.
-func (cu *CarUpdate) AddYear(i int8) *CarUpdate {
+func (cu *CarUpdate) AddYear(i int32) *CarUpdate {
 	cu.mutation.AddYear(i)
 	return cu
 }
@@ -198,10 +198,10 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(car.FieldModel, field.TypeString, value)
 	}
 	if value, ok := cu.mutation.Year(); ok {
-		_spec.SetField(car.FieldYear, field.TypeInt8, value)
+		_spec.SetField(car.FieldYear, field.TypeInt32, value)
 	}
 	if value, ok := cu.mutation.AddedYear(); ok {
-		_spec.AddField(car.FieldYear, field.TypeInt8, value)
+		_spec.AddField(car.FieldYear, field.TypeInt32, value)
 	}
 	if cu.mutation.FuelRecordsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -326,14 +326,14 @@ func (cuo *CarUpdateOne) SetModel(s string) *CarUpdateOne {
 }
 
 // SetYear sets the "year" field.
-func (cuo *CarUpdateOne) SetYear(i int8) *CarUpdateOne {
+func (cuo *CarUpdateOne) SetYear(i int32) *CarUpdateOne {
 	cuo.mutation.ResetYear()
 	cuo.mutation.SetYear(i)
 	return cuo
 }
 
 // AddYear adds i to the "year" field.
-func (cuo *CarUpdateOne) AddYear(i int8) *CarUpdateOne {
+func (cuo *CarUpdateOne) AddYear(i int32) *CarUpdateOne {
 	cuo.mutation.AddYear(i)
 	return cuo
 }
@@ -511,10 +511,10 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 		_spec.SetField(car.FieldModel, field.TypeString, value)
 	}
 	if value, ok := cuo.mutation.Year(); ok {
-		_spec.SetField(car.FieldYear, field.TypeInt8, value)
+		_spec.SetField(car.FieldYear, field.TypeInt32, value)
 	}
 	if value, ok := cuo.mutation.AddedYear(); ok {
-		_spec.AddField(car.FieldYear, field.TypeInt8, value)
+		_spec.AddField(car.FieldYear, field.TypeInt32, value)
 	}
 	if cuo.mutation.FuelRecordsCleared() {
 		edge := &sqlgraph.EdgeSpec{

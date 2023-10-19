@@ -26,7 +26,7 @@ func init() {
 	// carDescYear is the schema descriptor for year field.
 	carDescYear := carFields[3].Descriptor()
 	// car.YearValidator is a validator for the "year" field. It is called by the builders before save.
-	car.YearValidator = carDescYear.Validators[0].(func(int8) error)
+	car.YearValidator = carDescYear.Validators[0].(func(int32) error)
 	fuelrecordFields := schema.FuelRecord{}.Fields()
 	_ = fuelrecordFields
 	// fuelrecordDescCurrentFuelLiters is the schema descriptor for current_fuel_liters field.
