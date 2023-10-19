@@ -40,7 +40,7 @@ func (frd *FuelRecordDelete) ExecX(ctx context.Context) int {
 }
 
 func (frd *FuelRecordDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(fuelrecord.Table, sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(fuelrecord.Table, sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID))
 	if ps := frd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

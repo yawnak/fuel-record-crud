@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/car"
+	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
+	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 )
 
 // CarCreate is the builder for creating a Car entity.
@@ -18,12 +20,6 @@ type CarCreate struct {
 	config
 	mutation *CarMutation
 	hooks    []Hook
-}
-
-// SetCarID sets the "car_id" field.
-func (cc *CarCreate) SetCarID(u uuid.UUID) *CarCreate {
-	cc.mutation.SetCarID(u)
-	return cc
 }
 
 // SetMake sets the "make" field.
@@ -42,6 +38,42 @@ func (cc *CarCreate) SetModel(s string) *CarCreate {
 func (cc *CarCreate) SetYear(i int8) *CarCreate {
 	cc.mutation.SetYear(i)
 	return cc
+}
+
+// SetID sets the "id" field.
+func (cc *CarCreate) SetID(u uuid.UUID) *CarCreate {
+	cc.mutation.SetID(u)
+	return cc
+}
+
+// AddFuelRecordIDs adds the "fuel_records" edge to the FuelRecord entity by IDs.
+func (cc *CarCreate) AddFuelRecordIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddFuelRecordIDs(ids...)
+	return cc
+}
+
+// AddFuelRecords adds the "fuel_records" edges to the FuelRecord entity.
+func (cc *CarCreate) AddFuelRecords(f ...*FuelRecord) *CarCreate {
+	ids := make([]uuid.UUID, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return cc.AddFuelRecordIDs(ids...)
+}
+
+// AddOdometerRecordIDs adds the "odometer_records" edge to the OdometerRecord entity by IDs.
+func (cc *CarCreate) AddOdometerRecordIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddOdometerRecordIDs(ids...)
+	return cc
+}
+
+// AddOdometerRecords adds the "odometer_records" edges to the OdometerRecord entity.
+func (cc *CarCreate) AddOdometerRecords(o ...*OdometerRecord) *CarCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return cc.AddOdometerRecordIDs(ids...)
 }
 
 // Mutation returns the CarMutation object of the builder.
@@ -78,9 +110,6 @@ func (cc *CarCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *CarCreate) check() error {
-	if _, ok := cc.mutation.CarID(); !ok {
-		return &ValidationError{Name: "car_id", err: errors.New(`ent: missing required field "Car.car_id"`)}
-	}
 	if _, ok := cc.mutation.Make(); !ok {
 		return &ValidationError{Name: "make", err: errors.New(`ent: missing required field "Car.make"`)}
 	}
@@ -119,8 +148,13 @@ func (cc *CarCreate) sqlSave(ctx context.Context) (*Car, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	cc.mutation.id = &_node.ID
 	cc.mutation.done = true
 	return _node, nil
@@ -129,11 +163,11 @@ func (cc *CarCreate) sqlSave(ctx context.Context) (*Car, error) {
 func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Car{config: cc.config}
-		_spec = sqlgraph.NewCreateSpec(car.Table, sqlgraph.NewFieldSpec(car.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(car.Table, sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID))
 	)
-	if value, ok := cc.mutation.CarID(); ok {
-		_spec.SetField(car.FieldCarID, field.TypeUUID, value)
-		_node.CarID = value
+	if id, ok := cc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := cc.mutation.Make(); ok {
 		_spec.SetField(car.FieldMake, field.TypeString, value)
@@ -146,6 +180,38 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.Year(); ok {
 		_spec.SetField(car.FieldYear, field.TypeInt8, value)
 		_node.Year = value
+	}
+	if nodes := cc.mutation.FuelRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.FuelRecordsTable,
+			Columns: []string{car.FuelRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.OdometerRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.OdometerRecordsTable,
+			Columns: []string{car.OdometerRecordsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -194,10 +260,6 @@ func (ccb *CarCreateBulk) Save(ctx context.Context) ([]*Car, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

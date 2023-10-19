@@ -5,18 +5,84 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 )
 
 // OdometerRecord is the model entity for the OdometerRecord schema.
 type OdometerRecord struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID           int `json:"id,omitempty"`
-	selectValues sql.SelectValues
+	ID uuid.UUID `json:"id,omitempty"`
+	// CurrentFuelLiters holds the value of the "current_fuel_liters" field.
+	CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+	// Difference holds the value of the "difference" field.
+	Difference float64 `json:"difference,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the OdometerRecordQuery when eager-loading is set.
+	Edges                OdometerRecordEdges `json:"edges"`
+	car_odometer_records *uuid.UUID
+	odometer_record_next *uuid.UUID
+	selectValues         sql.SelectValues
+}
+
+// OdometerRecordEdges holds the relations/edges for other nodes in the graph.
+type OdometerRecordEdges struct {
+	// Car holds the value of the car edge.
+	Car *Car `json:"car,omitempty"`
+	// Prev holds the value of the prev edge.
+	Prev *OdometerRecord `json:"prev,omitempty"`
+	// Next holds the value of the next edge.
+	Next *OdometerRecord `json:"next,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// CarOrErr returns the Car value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OdometerRecordEdges) CarOrErr() (*Car, error) {
+	if e.loadedTypes[0] {
+		if e.Car == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: car.Label}
+		}
+		return e.Car, nil
+	}
+	return nil, &NotLoadedError{edge: "car"}
+}
+
+// PrevOrErr returns the Prev value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OdometerRecordEdges) PrevOrErr() (*OdometerRecord, error) {
+	if e.loadedTypes[1] {
+		if e.Prev == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: odometerrecord.Label}
+		}
+		return e.Prev, nil
+	}
+	return nil, &NotLoadedError{edge: "prev"}
+}
+
+// NextOrErr returns the Next value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OdometerRecordEdges) NextOrErr() (*OdometerRecord, error) {
+	if e.loadedTypes[2] {
+		if e.Next == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: odometerrecord.Label}
+		}
+		return e.Next, nil
+	}
+	return nil, &NotLoadedError{edge: "next"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -24,8 +90,16 @@ func (*OdometerRecord) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case odometerrecord.FieldCurrentFuelLiters, odometerrecord.FieldDifference:
+			values[i] = new(sql.NullFloat64)
+		case odometerrecord.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case odometerrecord.FieldID:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
+		case odometerrecord.ForeignKeys[0]: // car_odometer_records
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case odometerrecord.ForeignKeys[1]: // odometer_record_next
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -42,11 +116,43 @@ func (or *OdometerRecord) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case odometerrecord.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				or.ID = *value
 			}
-			or.ID = int(value.Int64)
+		case odometerrecord.FieldCurrentFuelLiters:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field current_fuel_liters", values[i])
+			} else if value.Valid {
+				or.CurrentFuelLiters = value.Float64
+			}
+		case odometerrecord.FieldDifference:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field difference", values[i])
+			} else if value.Valid {
+				or.Difference = value.Float64
+			}
+		case odometerrecord.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				or.CreatedAt = value.Time
+			}
+		case odometerrecord.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field car_odometer_records", values[i])
+			} else if value.Valid {
+				or.car_odometer_records = new(uuid.UUID)
+				*or.car_odometer_records = *value.S.(*uuid.UUID)
+			}
+		case odometerrecord.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field odometer_record_next", values[i])
+			} else if value.Valid {
+				or.odometer_record_next = new(uuid.UUID)
+				*or.odometer_record_next = *value.S.(*uuid.UUID)
+			}
 		default:
 			or.selectValues.Set(columns[i], values[i])
 		}
@@ -58,6 +164,21 @@ func (or *OdometerRecord) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (or *OdometerRecord) Value(name string) (ent.Value, error) {
 	return or.selectValues.Get(name)
+}
+
+// QueryCar queries the "car" edge of the OdometerRecord entity.
+func (or *OdometerRecord) QueryCar() *CarQuery {
+	return NewOdometerRecordClient(or.config).QueryCar(or)
+}
+
+// QueryPrev queries the "prev" edge of the OdometerRecord entity.
+func (or *OdometerRecord) QueryPrev() *OdometerRecordQuery {
+	return NewOdometerRecordClient(or.config).QueryPrev(or)
+}
+
+// QueryNext queries the "next" edge of the OdometerRecord entity.
+func (or *OdometerRecord) QueryNext() *OdometerRecordQuery {
+	return NewOdometerRecordClient(or.config).QueryNext(or)
 }
 
 // Update returns a builder for updating this OdometerRecord.
@@ -82,7 +203,15 @@ func (or *OdometerRecord) Unwrap() *OdometerRecord {
 func (or *OdometerRecord) String() string {
 	var builder strings.Builder
 	builder.WriteString("OdometerRecord(")
-	builder.WriteString(fmt.Sprintf("id=%v", or.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", or.ID))
+	builder.WriteString("current_fuel_liters=")
+	builder.WriteString(fmt.Sprintf("%v", or.CurrentFuelLiters))
+	builder.WriteString(", ")
+	builder.WriteString("difference=")
+	builder.WriteString(fmt.Sprintf("%v", or.Difference))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(or.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

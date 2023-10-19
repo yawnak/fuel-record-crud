@@ -4,10 +4,14 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 )
 
@@ -16,6 +20,79 @@ type FuelRecordCreate struct {
 	config
 	mutation *FuelRecordMutation
 	hooks    []Hook
+}
+
+// SetCurrentFuelLiters sets the "current_fuel_liters" field.
+func (frc *FuelRecordCreate) SetCurrentFuelLiters(f float64) *FuelRecordCreate {
+	frc.mutation.SetCurrentFuelLiters(f)
+	return frc
+}
+
+// SetDifference sets the "difference" field.
+func (frc *FuelRecordCreate) SetDifference(f float64) *FuelRecordCreate {
+	frc.mutation.SetDifference(f)
+	return frc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (frc *FuelRecordCreate) SetCreatedAt(t time.Time) *FuelRecordCreate {
+	frc.mutation.SetCreatedAt(t)
+	return frc
+}
+
+// SetID sets the "id" field.
+func (frc *FuelRecordCreate) SetID(u uuid.UUID) *FuelRecordCreate {
+	frc.mutation.SetID(u)
+	return frc
+}
+
+// SetCarID sets the "car" edge to the Car entity by ID.
+func (frc *FuelRecordCreate) SetCarID(id uuid.UUID) *FuelRecordCreate {
+	frc.mutation.SetCarID(id)
+	return frc
+}
+
+// SetCar sets the "car" edge to the Car entity.
+func (frc *FuelRecordCreate) SetCar(c *Car) *FuelRecordCreate {
+	return frc.SetCarID(c.ID)
+}
+
+// SetPrevID sets the "prev" edge to the FuelRecord entity by ID.
+func (frc *FuelRecordCreate) SetPrevID(id uuid.UUID) *FuelRecordCreate {
+	frc.mutation.SetPrevID(id)
+	return frc
+}
+
+// SetNillablePrevID sets the "prev" edge to the FuelRecord entity by ID if the given value is not nil.
+func (frc *FuelRecordCreate) SetNillablePrevID(id *uuid.UUID) *FuelRecordCreate {
+	if id != nil {
+		frc = frc.SetPrevID(*id)
+	}
+	return frc
+}
+
+// SetPrev sets the "prev" edge to the FuelRecord entity.
+func (frc *FuelRecordCreate) SetPrev(f *FuelRecord) *FuelRecordCreate {
+	return frc.SetPrevID(f.ID)
+}
+
+// SetNextID sets the "next" edge to the FuelRecord entity by ID.
+func (frc *FuelRecordCreate) SetNextID(id uuid.UUID) *FuelRecordCreate {
+	frc.mutation.SetNextID(id)
+	return frc
+}
+
+// SetNillableNextID sets the "next" edge to the FuelRecord entity by ID if the given value is not nil.
+func (frc *FuelRecordCreate) SetNillableNextID(id *uuid.UUID) *FuelRecordCreate {
+	if id != nil {
+		frc = frc.SetNextID(*id)
+	}
+	return frc
+}
+
+// SetNext sets the "next" edge to the FuelRecord entity.
+func (frc *FuelRecordCreate) SetNext(f *FuelRecord) *FuelRecordCreate {
+	return frc.SetNextID(f.ID)
 }
 
 // Mutation returns the FuelRecordMutation object of the builder.
@@ -52,6 +129,23 @@ func (frc *FuelRecordCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (frc *FuelRecordCreate) check() error {
+	if _, ok := frc.mutation.CurrentFuelLiters(); !ok {
+		return &ValidationError{Name: "current_fuel_liters", err: errors.New(`ent: missing required field "FuelRecord.current_fuel_liters"`)}
+	}
+	if v, ok := frc.mutation.CurrentFuelLiters(); ok {
+		if err := fuelrecord.CurrentFuelLitersValidator(v); err != nil {
+			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "FuelRecord.current_fuel_liters": %w`, err)}
+		}
+	}
+	if _, ok := frc.mutation.Difference(); !ok {
+		return &ValidationError{Name: "difference", err: errors.New(`ent: missing required field "FuelRecord.difference"`)}
+	}
+	if _, ok := frc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "FuelRecord.created_at"`)}
+	}
+	if _, ok := frc.mutation.CarID(); !ok {
+		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "FuelRecord.car"`)}
+	}
 	return nil
 }
 
@@ -66,8 +160,13 @@ func (frc *FuelRecordCreate) sqlSave(ctx context.Context) (*FuelRecord, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	frc.mutation.id = &_node.ID
 	frc.mutation.done = true
 	return _node, nil
@@ -76,8 +175,74 @@ func (frc *FuelRecordCreate) sqlSave(ctx context.Context) (*FuelRecord, error) {
 func (frc *FuelRecordCreate) createSpec() (*FuelRecord, *sqlgraph.CreateSpec) {
 	var (
 		_node = &FuelRecord{config: frc.config}
-		_spec = sqlgraph.NewCreateSpec(fuelrecord.Table, sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(fuelrecord.Table, sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID))
 	)
+	if id, ok := frc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := frc.mutation.CurrentFuelLiters(); ok {
+		_spec.SetField(fuelrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
+		_node.CurrentFuelLiters = value
+	}
+	if value, ok := frc.mutation.Difference(); ok {
+		_spec.SetField(fuelrecord.FieldDifference, field.TypeFloat64, value)
+		_node.Difference = value
+	}
+	if value, ok := frc.mutation.CreatedAt(); ok {
+		_spec.SetField(fuelrecord.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if nodes := frc.mutation.CarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   fuelrecord.CarTable,
+			Columns: []string{fuelrecord.CarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.car_fuel_records = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := frc.mutation.PrevIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   fuelrecord.PrevTable,
+			Columns: []string{fuelrecord.PrevColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.fuel_record_next = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := frc.mutation.NextIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   fuelrecord.NextTable,
+			Columns: []string{fuelrecord.NextColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -125,10 +290,6 @@ func (frcb *FuelRecordCreateBulk) Save(ctx context.Context) ([]*FuelRecord, erro
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

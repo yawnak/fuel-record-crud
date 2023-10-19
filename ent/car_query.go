@@ -4,23 +4,29 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/car"
+	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
+	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
 
 // CarQuery is the builder for querying Car entities.
 type CarQuery struct {
 	config
-	ctx        *QueryContext
-	order      []car.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Car
+	ctx                 *QueryContext
+	order               []car.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Car
+	withFuelRecords     *FuelRecordQuery
+	withOdometerRecords *OdometerRecordQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +63,50 @@ func (cq *CarQuery) Order(o ...car.OrderOption) *CarQuery {
 	return cq
 }
 
+// QueryFuelRecords chains the current query on the "fuel_records" edge.
+func (cq *CarQuery) QueryFuelRecords() *FuelRecordQuery {
+	query := (&FuelRecordClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.FuelRecordsTable, car.FuelRecordsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOdometerRecords chains the current query on the "odometer_records" edge.
+func (cq *CarQuery) QueryOdometerRecords() *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.OdometerRecordsTable, car.OdometerRecordsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Car entity from the query.
 // Returns a *NotFoundError when no Car was found.
 func (cq *CarQuery) First(ctx context.Context) (*Car, error) {
@@ -81,8 +131,8 @@ func (cq *CarQuery) FirstX(ctx context.Context) *Car {
 
 // FirstID returns the first Car ID from the query.
 // Returns a *NotFoundError when no Car ID was found.
-func (cq *CarQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CarQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(1).IDs(setContextOp(ctx, cq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +144,7 @@ func (cq *CarQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CarQuery) FirstIDX(ctx context.Context) int {
+func (cq *CarQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +182,8 @@ func (cq *CarQuery) OnlyX(ctx context.Context) *Car {
 // OnlyID is like Only, but returns the only Car ID in the query.
 // Returns a *NotSingularError when more than one Car ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CarQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (cq *CarQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(2).IDs(setContextOp(ctx, cq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +199,7 @@ func (cq *CarQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CarQuery) OnlyIDX(ctx context.Context) int {
+func (cq *CarQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +227,7 @@ func (cq *CarQuery) AllX(ctx context.Context) []*Car {
 }
 
 // IDs executes the query and returns a list of Car IDs.
-func (cq *CarQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (cq *CarQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if cq.ctx.Unique == nil && cq.path != nil {
 		cq.Unique(true)
 	}
@@ -189,7 +239,7 @@ func (cq *CarQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CarQuery) IDsX(ctx context.Context) []int {
+func (cq *CarQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -244,15 +294,39 @@ func (cq *CarQuery) Clone() *CarQuery {
 		return nil
 	}
 	return &CarQuery{
-		config:     cq.config,
-		ctx:        cq.ctx.Clone(),
-		order:      append([]car.OrderOption{}, cq.order...),
-		inters:     append([]Interceptor{}, cq.inters...),
-		predicates: append([]predicate.Car{}, cq.predicates...),
+		config:              cq.config,
+		ctx:                 cq.ctx.Clone(),
+		order:               append([]car.OrderOption{}, cq.order...),
+		inters:              append([]Interceptor{}, cq.inters...),
+		predicates:          append([]predicate.Car{}, cq.predicates...),
+		withFuelRecords:     cq.withFuelRecords.Clone(),
+		withOdometerRecords: cq.withOdometerRecords.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
 	}
+}
+
+// WithFuelRecords tells the query-builder to eager-load the nodes that are connected to
+// the "fuel_records" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithFuelRecords(opts ...func(*FuelRecordQuery)) *CarQuery {
+	query := (&FuelRecordClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withFuelRecords = query
+	return cq
+}
+
+// WithOdometerRecords tells the query-builder to eager-load the nodes that are connected to
+// the "odometer_records" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithOdometerRecords(opts ...func(*OdometerRecordQuery)) *CarQuery {
+	query := (&OdometerRecordClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withOdometerRecords = query
+	return cq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -261,12 +335,12 @@ func (cq *CarQuery) Clone() *CarQuery {
 // Example:
 //
 //	var v []struct {
-//		CarID uuid.UUID `json:"car_id,omitempty"`
+//		Make string `json:"make,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Car.Query().
-//		GroupBy(car.FieldCarID).
+//		GroupBy(car.FieldMake).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (cq *CarQuery) GroupBy(field string, fields ...string) *CarGroupBy {
@@ -284,11 +358,11 @@ func (cq *CarQuery) GroupBy(field string, fields ...string) *CarGroupBy {
 // Example:
 //
 //	var v []struct {
-//		CarID uuid.UUID `json:"car_id,omitempty"`
+//		Make string `json:"make,omitempty"`
 //	}
 //
 //	client.Car.Query().
-//		Select(car.FieldCarID).
+//		Select(car.FieldMake).
 //		Scan(ctx, &v)
 func (cq *CarQuery) Select(fields ...string) *CarSelect {
 	cq.ctx.Fields = append(cq.ctx.Fields, fields...)
@@ -331,8 +405,12 @@ func (cq *CarQuery) prepareQuery(ctx context.Context) error {
 
 func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, error) {
 	var (
-		nodes = []*Car{}
-		_spec = cq.querySpec()
+		nodes       = []*Car{}
+		_spec       = cq.querySpec()
+		loadedTypes = [2]bool{
+			cq.withFuelRecords != nil,
+			cq.withOdometerRecords != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Car).scanValues(nil, columns)
@@ -340,6 +418,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Car{config: cq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +430,84 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := cq.withFuelRecords; query != nil {
+		if err := cq.loadFuelRecords(ctx, query, nodes,
+			func(n *Car) { n.Edges.FuelRecords = []*FuelRecord{} },
+			func(n *Car, e *FuelRecord) { n.Edges.FuelRecords = append(n.Edges.FuelRecords, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := cq.withOdometerRecords; query != nil {
+		if err := cq.loadOdometerRecords(ctx, query, nodes,
+			func(n *Car) { n.Edges.OdometerRecords = []*OdometerRecord{} },
+			func(n *Car, e *OdometerRecord) { n.Edges.OdometerRecords = append(n.Edges.OdometerRecords, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (cq *CarQuery) loadFuelRecords(ctx context.Context, query *FuelRecordQuery, nodes []*Car, init func(*Car), assign func(*Car, *FuelRecord)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.FuelRecord(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.FuelRecordsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_fuel_records
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_fuel_records" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "car_fuel_records" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (cq *CarQuery) loadOdometerRecords(ctx context.Context, query *OdometerRecordQuery, nodes []*Car, init func(*Car), assign func(*Car, *OdometerRecord)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.OdometerRecord(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.OdometerRecordsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_odometer_records
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_odometer_records" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "car_odometer_records" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (cq *CarQuery) sqlCount(ctx context.Context) (int, error) {
@@ -364,7 +520,7 @@ func (cq *CarQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (cq *CarQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(car.Table, car.Columns, sqlgraph.NewFieldSpec(car.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(car.Table, car.Columns, sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID))
 	_spec.From = cq.sql
 	if unique := cq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

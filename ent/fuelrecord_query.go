@@ -4,12 +4,15 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
@@ -21,6 +24,10 @@ type FuelRecordQuery struct {
 	order      []fuelrecord.OrderOption
 	inters     []Interceptor
 	predicates []predicate.FuelRecord
+	withCar    *CarQuery
+	withPrev   *FuelRecordQuery
+	withNext   *FuelRecordQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +64,72 @@ func (frq *FuelRecordQuery) Order(o ...fuelrecord.OrderOption) *FuelRecordQuery 
 	return frq
 }
 
+// QueryCar chains the current query on the "car" edge.
+func (frq *FuelRecordQuery) QueryCar() *CarQuery {
+	query := (&CarClient{config: frq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := frq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := frq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, selector),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, fuelrecord.CarTable, fuelrecord.CarColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(frq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPrev chains the current query on the "prev" edge.
+func (frq *FuelRecordQuery) QueryPrev() *FuelRecordQuery {
+	query := (&FuelRecordClient{config: frq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := frq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := frq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, selector),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, fuelrecord.PrevTable, fuelrecord.PrevColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(frq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNext chains the current query on the "next" edge.
+func (frq *FuelRecordQuery) QueryNext() *FuelRecordQuery {
+	query := (&FuelRecordClient{config: frq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := frq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := frq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, selector),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, fuelrecord.NextTable, fuelrecord.NextColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(frq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first FuelRecord entity from the query.
 // Returns a *NotFoundError when no FuelRecord was found.
 func (frq *FuelRecordQuery) First(ctx context.Context) (*FuelRecord, error) {
@@ -81,8 +154,8 @@ func (frq *FuelRecordQuery) FirstX(ctx context.Context) *FuelRecord {
 
 // FirstID returns the first FuelRecord ID from the query.
 // Returns a *NotFoundError when no FuelRecord ID was found.
-func (frq *FuelRecordQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (frq *FuelRecordQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = frq.Limit(1).IDs(setContextOp(ctx, frq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +167,7 @@ func (frq *FuelRecordQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (frq *FuelRecordQuery) FirstIDX(ctx context.Context) int {
+func (frq *FuelRecordQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := frq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +205,8 @@ func (frq *FuelRecordQuery) OnlyX(ctx context.Context) *FuelRecord {
 // OnlyID is like Only, but returns the only FuelRecord ID in the query.
 // Returns a *NotSingularError when more than one FuelRecord ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (frq *FuelRecordQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (frq *FuelRecordQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = frq.Limit(2).IDs(setContextOp(ctx, frq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +222,7 @@ func (frq *FuelRecordQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (frq *FuelRecordQuery) OnlyIDX(ctx context.Context) int {
+func (frq *FuelRecordQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := frq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +250,7 @@ func (frq *FuelRecordQuery) AllX(ctx context.Context) []*FuelRecord {
 }
 
 // IDs executes the query and returns a list of FuelRecord IDs.
-func (frq *FuelRecordQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (frq *FuelRecordQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if frq.ctx.Unique == nil && frq.path != nil {
 		frq.Unique(true)
 	}
@@ -189,7 +262,7 @@ func (frq *FuelRecordQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (frq *FuelRecordQuery) IDsX(ctx context.Context) []int {
+func (frq *FuelRecordQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := frq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -249,14 +322,62 @@ func (frq *FuelRecordQuery) Clone() *FuelRecordQuery {
 		order:      append([]fuelrecord.OrderOption{}, frq.order...),
 		inters:     append([]Interceptor{}, frq.inters...),
 		predicates: append([]predicate.FuelRecord{}, frq.predicates...),
+		withCar:    frq.withCar.Clone(),
+		withPrev:   frq.withPrev.Clone(),
+		withNext:   frq.withNext.Clone(),
 		// clone intermediate query.
 		sql:  frq.sql.Clone(),
 		path: frq.path,
 	}
 }
 
+// WithCar tells the query-builder to eager-load the nodes that are connected to
+// the "car" edge. The optional arguments are used to configure the query builder of the edge.
+func (frq *FuelRecordQuery) WithCar(opts ...func(*CarQuery)) *FuelRecordQuery {
+	query := (&CarClient{config: frq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	frq.withCar = query
+	return frq
+}
+
+// WithPrev tells the query-builder to eager-load the nodes that are connected to
+// the "prev" edge. The optional arguments are used to configure the query builder of the edge.
+func (frq *FuelRecordQuery) WithPrev(opts ...func(*FuelRecordQuery)) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: frq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	frq.withPrev = query
+	return frq
+}
+
+// WithNext tells the query-builder to eager-load the nodes that are connected to
+// the "next" edge. The optional arguments are used to configure the query builder of the edge.
+func (frq *FuelRecordQuery) WithNext(opts ...func(*FuelRecordQuery)) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: frq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	frq.withNext = query
+	return frq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.FuelRecord.Query().
+//		GroupBy(fuelrecord.FieldCurrentFuelLiters).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (frq *FuelRecordQuery) GroupBy(field string, fields ...string) *FuelRecordGroupBy {
 	frq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &FuelRecordGroupBy{build: frq}
@@ -268,6 +389,16 @@ func (frq *FuelRecordQuery) GroupBy(field string, fields ...string) *FuelRecordG
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+//	}
+//
+//	client.FuelRecord.Query().
+//		Select(fuelrecord.FieldCurrentFuelLiters).
+//		Scan(ctx, &v)
 func (frq *FuelRecordQuery) Select(fields ...string) *FuelRecordSelect {
 	frq.ctx.Fields = append(frq.ctx.Fields, fields...)
 	sbuild := &FuelRecordSelect{FuelRecordQuery: frq}
@@ -309,15 +440,28 @@ func (frq *FuelRecordQuery) prepareQuery(ctx context.Context) error {
 
 func (frq *FuelRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*FuelRecord, error) {
 	var (
-		nodes = []*FuelRecord{}
-		_spec = frq.querySpec()
+		nodes       = []*FuelRecord{}
+		withFKs     = frq.withFKs
+		_spec       = frq.querySpec()
+		loadedTypes = [3]bool{
+			frq.withCar != nil,
+			frq.withPrev != nil,
+			frq.withNext != nil,
+		}
 	)
+	if frq.withCar != nil || frq.withPrev != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, fuelrecord.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*FuelRecord).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &FuelRecord{config: frq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -329,7 +473,118 @@ func (frq *FuelRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := frq.withCar; query != nil {
+		if err := frq.loadCar(ctx, query, nodes, nil,
+			func(n *FuelRecord, e *Car) { n.Edges.Car = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := frq.withPrev; query != nil {
+		if err := frq.loadPrev(ctx, query, nodes, nil,
+			func(n *FuelRecord, e *FuelRecord) { n.Edges.Prev = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := frq.withNext; query != nil {
+		if err := frq.loadNext(ctx, query, nodes, nil,
+			func(n *FuelRecord, e *FuelRecord) { n.Edges.Next = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (frq *FuelRecordQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *Car)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*FuelRecord)
+	for i := range nodes {
+		if nodes[i].car_fuel_records == nil {
+			continue
+		}
+		fk := *nodes[i].car_fuel_records
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(car.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "car_fuel_records" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (frq *FuelRecordQuery) loadPrev(ctx context.Context, query *FuelRecordQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *FuelRecord)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*FuelRecord)
+	for i := range nodes {
+		if nodes[i].fuel_record_next == nil {
+			continue
+		}
+		fk := *nodes[i].fuel_record_next
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(fuelrecord.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "fuel_record_next" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (frq *FuelRecordQuery) loadNext(ctx context.Context, query *FuelRecordQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *FuelRecord)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*FuelRecord)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.FuelRecord(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(fuelrecord.NextColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.fuel_record_next
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "fuel_record_next" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "fuel_record_next" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (frq *FuelRecordQuery) sqlCount(ctx context.Context) (int, error) {
@@ -342,7 +597,7 @@ func (frq *FuelRecordQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (frq *FuelRecordQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(fuelrecord.Table, fuelrecord.Columns, sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(fuelrecord.Table, fuelrecord.Columns, sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID))
 	_spec.From = frq.sql
 	if unique := frq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

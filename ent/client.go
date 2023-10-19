@@ -9,11 +9,13 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
@@ -272,7 +274,7 @@ func (c *CarClient) UpdateOne(ca *Car) *CarUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *CarClient) UpdateOneID(id int) *CarUpdateOne {
+func (c *CarClient) UpdateOneID(id uuid.UUID) *CarUpdateOne {
 	mutation := newCarMutation(c.config, OpUpdateOne, withCarID(id))
 	return &CarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -289,7 +291,7 @@ func (c *CarClient) DeleteOne(ca *Car) *CarDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CarClient) DeleteOneID(id int) *CarDeleteOne {
+func (c *CarClient) DeleteOneID(id uuid.UUID) *CarDeleteOne {
 	builder := c.Delete().Where(car.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -306,17 +308,49 @@ func (c *CarClient) Query() *CarQuery {
 }
 
 // Get returns a Car entity by its id.
-func (c *CarClient) Get(ctx context.Context, id int) (*Car, error) {
+func (c *CarClient) Get(ctx context.Context, id uuid.UUID) (*Car, error) {
 	return c.Query().Where(car.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *CarClient) GetX(ctx context.Context, id int) *Car {
+func (c *CarClient) GetX(ctx context.Context, id uuid.UUID) *Car {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryFuelRecords queries the fuel_records edge of a Car.
+func (c *CarClient) QueryFuelRecords(ca *Car) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.FuelRecordsTable, car.FuelRecordsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOdometerRecords queries the odometer_records edge of a Car.
+func (c *CarClient) QueryOdometerRecords(ca *Car) *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.OdometerRecordsTable, car.OdometerRecordsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -405,7 +439,7 @@ func (c *FuelRecordClient) UpdateOne(fr *FuelRecord) *FuelRecordUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FuelRecordClient) UpdateOneID(id int) *FuelRecordUpdateOne {
+func (c *FuelRecordClient) UpdateOneID(id uuid.UUID) *FuelRecordUpdateOne {
 	mutation := newFuelRecordMutation(c.config, OpUpdateOne, withFuelRecordID(id))
 	return &FuelRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -422,7 +456,7 @@ func (c *FuelRecordClient) DeleteOne(fr *FuelRecord) *FuelRecordDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *FuelRecordClient) DeleteOneID(id int) *FuelRecordDeleteOne {
+func (c *FuelRecordClient) DeleteOneID(id uuid.UUID) *FuelRecordDeleteOne {
 	builder := c.Delete().Where(fuelrecord.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -439,17 +473,65 @@ func (c *FuelRecordClient) Query() *FuelRecordQuery {
 }
 
 // Get returns a FuelRecord entity by its id.
-func (c *FuelRecordClient) Get(ctx context.Context, id int) (*FuelRecord, error) {
+func (c *FuelRecordClient) Get(ctx context.Context, id uuid.UUID) (*FuelRecord, error) {
 	return c.Query().Where(fuelrecord.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FuelRecordClient) GetX(ctx context.Context, id int) *FuelRecord {
+func (c *FuelRecordClient) GetX(ctx context.Context, id uuid.UUID) *FuelRecord {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryCar queries the car edge of a FuelRecord.
+func (c *FuelRecordClient) QueryCar(fr *FuelRecord) *CarQuery {
+	query := (&CarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := fr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, fuelrecord.CarTable, fuelrecord.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(fr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPrev queries the prev edge of a FuelRecord.
+func (c *FuelRecordClient) QueryPrev(fr *FuelRecord) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := fr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, id),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, fuelrecord.PrevTable, fuelrecord.PrevColumn),
+		)
+		fromV = sqlgraph.Neighbors(fr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNext queries the next edge of a FuelRecord.
+func (c *FuelRecordClient) QueryNext(fr *FuelRecord) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := fr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, id),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, fuelrecord.NextTable, fuelrecord.NextColumn),
+		)
+		fromV = sqlgraph.Neighbors(fr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -538,7 +620,7 @@ func (c *OdometerRecordClient) UpdateOne(or *OdometerRecord) *OdometerRecordUpda
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *OdometerRecordClient) UpdateOneID(id int) *OdometerRecordUpdateOne {
+func (c *OdometerRecordClient) UpdateOneID(id uuid.UUID) *OdometerRecordUpdateOne {
 	mutation := newOdometerRecordMutation(c.config, OpUpdateOne, withOdometerRecordID(id))
 	return &OdometerRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -555,7 +637,7 @@ func (c *OdometerRecordClient) DeleteOne(or *OdometerRecord) *OdometerRecordDele
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OdometerRecordClient) DeleteOneID(id int) *OdometerRecordDeleteOne {
+func (c *OdometerRecordClient) DeleteOneID(id uuid.UUID) *OdometerRecordDeleteOne {
 	builder := c.Delete().Where(odometerrecord.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -572,17 +654,65 @@ func (c *OdometerRecordClient) Query() *OdometerRecordQuery {
 }
 
 // Get returns a OdometerRecord entity by its id.
-func (c *OdometerRecordClient) Get(ctx context.Context, id int) (*OdometerRecord, error) {
+func (c *OdometerRecordClient) Get(ctx context.Context, id uuid.UUID) (*OdometerRecord, error) {
 	return c.Query().Where(odometerrecord.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *OdometerRecordClient) GetX(ctx context.Context, id int) *OdometerRecord {
+func (c *OdometerRecordClient) GetX(ctx context.Context, id uuid.UUID) *OdometerRecord {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryCar queries the car edge of a OdometerRecord.
+func (c *OdometerRecordClient) QueryCar(or *OdometerRecord) *CarQuery {
+	query := (&CarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, odometerrecord.CarTable, odometerrecord.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPrev queries the prev edge of a OdometerRecord.
+func (c *OdometerRecordClient) QueryPrev(or *OdometerRecord) *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, id),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, odometerrecord.PrevTable, odometerrecord.PrevColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNext queries the next edge of a OdometerRecord.
+func (c *OdometerRecordClient) QueryNext(or *OdometerRecord) *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, id),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, odometerrecord.NextTable, odometerrecord.NextColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

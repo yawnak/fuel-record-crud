@@ -40,7 +40,7 @@ func (ord *OdometerRecordDelete) ExecX(ctx context.Context) int {
 }
 
 func (ord *OdometerRecordDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(odometerrecord.Table, sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(odometerrecord.Table, sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID))
 	if ps := ord.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

@@ -4,58 +4,54 @@ package car
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Car {
+func ID(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Car {
+func IDEQ(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Car {
+func IDNEQ(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Car {
+func IDIn(ids ...uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Car {
+func IDNotIn(ids ...uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Car {
+func IDGT(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Car {
+func IDGTE(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Car {
+func IDLT(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Car {
+func IDLTE(id uuid.UUID) predicate.Car {
 	return predicate.Car(sql.FieldLTE(FieldID, id))
-}
-
-// CarID applies equality check predicate on the "car_id" field. It's identical to CarIDEQ.
-func CarID(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldEQ(FieldCarID, v))
 }
 
 // Make applies equality check predicate on the "make" field. It's identical to MakeEQ.
@@ -71,46 +67,6 @@ func Model(v string) predicate.Car {
 // Year applies equality check predicate on the "year" field. It's identical to YearEQ.
 func Year(v int8) predicate.Car {
 	return predicate.Car(sql.FieldEQ(FieldYear, v))
-}
-
-// CarIDEQ applies the EQ predicate on the "car_id" field.
-func CarIDEQ(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldEQ(FieldCarID, v))
-}
-
-// CarIDNEQ applies the NEQ predicate on the "car_id" field.
-func CarIDNEQ(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldNEQ(FieldCarID, v))
-}
-
-// CarIDIn applies the In predicate on the "car_id" field.
-func CarIDIn(vs ...uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldIn(FieldCarID, vs...))
-}
-
-// CarIDNotIn applies the NotIn predicate on the "car_id" field.
-func CarIDNotIn(vs ...uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldNotIn(FieldCarID, vs...))
-}
-
-// CarIDGT applies the GT predicate on the "car_id" field.
-func CarIDGT(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldGT(FieldCarID, v))
-}
-
-// CarIDGTE applies the GTE predicate on the "car_id" field.
-func CarIDGTE(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldGTE(FieldCarID, v))
-}
-
-// CarIDLT applies the LT predicate on the "car_id" field.
-func CarIDLT(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldLT(FieldCarID, v))
-}
-
-// CarIDLTE applies the LTE predicate on the "car_id" field.
-func CarIDLTE(v uuid.UUID) predicate.Car {
-	return predicate.Car(sql.FieldLTE(FieldCarID, v))
 }
 
 // MakeEQ applies the EQ predicate on the "make" field.
@@ -281,6 +237,52 @@ func YearLT(v int8) predicate.Car {
 // YearLTE applies the LTE predicate on the "year" field.
 func YearLTE(v int8) predicate.Car {
 	return predicate.Car(sql.FieldLTE(FieldYear, v))
+}
+
+// HasFuelRecords applies the HasEdge predicate on the "fuel_records" edge.
+func HasFuelRecords() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FuelRecordsTable, FuelRecordsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFuelRecordsWith applies the HasEdge predicate on the "fuel_records" edge with a given conditions (other predicates).
+func HasFuelRecordsWith(preds ...predicate.FuelRecord) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := newFuelRecordsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOdometerRecords applies the HasEdge predicate on the "odometer_records" edge.
+func HasOdometerRecords() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OdometerRecordsTable, OdometerRecordsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOdometerRecordsWith applies the HasEdge predicate on the "odometer_records" edge with a given conditions (other predicates).
+func HasOdometerRecordsWith(preds ...predicate.OdometerRecord) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := newOdometerRecordsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

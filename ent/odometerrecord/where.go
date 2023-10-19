@@ -3,53 +3,261 @@
 package odometerrecord
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.OdometerRecord {
+func ID(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.OdometerRecord {
+func IDEQ(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.OdometerRecord {
+func IDNEQ(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.OdometerRecord {
+func IDIn(ids ...uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.OdometerRecord {
+func IDNotIn(ids ...uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.OdometerRecord {
+func IDGT(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.OdometerRecord {
+func IDGTE(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.OdometerRecord {
+func IDLT(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.OdometerRecord {
+func IDLTE(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldLTE(FieldID, id))
+}
+
+// CurrentFuelLiters applies equality check predicate on the "current_fuel_liters" field. It's identical to CurrentFuelLitersEQ.
+func CurrentFuelLiters(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentFuelLiters, v))
+}
+
+// Difference applies equality check predicate on the "difference" field. It's identical to DifferenceEQ.
+func Difference(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldDifference, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CurrentFuelLitersEQ applies the EQ predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersEQ(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentFuelLiters, v))
+}
+
+// CurrentFuelLitersNEQ applies the NEQ predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersNEQ(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNEQ(FieldCurrentFuelLiters, v))
+}
+
+// CurrentFuelLitersIn applies the In predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersIn(vs ...float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIn(FieldCurrentFuelLiters, vs...))
+}
+
+// CurrentFuelLitersNotIn applies the NotIn predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersNotIn(vs ...float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotIn(FieldCurrentFuelLiters, vs...))
+}
+
+// CurrentFuelLitersGT applies the GT predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersGT(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGT(FieldCurrentFuelLiters, v))
+}
+
+// CurrentFuelLitersGTE applies the GTE predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersGTE(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGTE(FieldCurrentFuelLiters, v))
+}
+
+// CurrentFuelLitersLT applies the LT predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersLT(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLT(FieldCurrentFuelLiters, v))
+}
+
+// CurrentFuelLitersLTE applies the LTE predicate on the "current_fuel_liters" field.
+func CurrentFuelLitersLTE(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLTE(FieldCurrentFuelLiters, v))
+}
+
+// DifferenceEQ applies the EQ predicate on the "difference" field.
+func DifferenceEQ(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldDifference, v))
+}
+
+// DifferenceNEQ applies the NEQ predicate on the "difference" field.
+func DifferenceNEQ(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNEQ(FieldDifference, v))
+}
+
+// DifferenceIn applies the In predicate on the "difference" field.
+func DifferenceIn(vs ...float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIn(FieldDifference, vs...))
+}
+
+// DifferenceNotIn applies the NotIn predicate on the "difference" field.
+func DifferenceNotIn(vs ...float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotIn(FieldDifference, vs...))
+}
+
+// DifferenceGT applies the GT predicate on the "difference" field.
+func DifferenceGT(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGT(FieldDifference, v))
+}
+
+// DifferenceGTE applies the GTE predicate on the "difference" field.
+func DifferenceGTE(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGTE(FieldDifference, v))
+}
+
+// DifferenceLT applies the LT predicate on the "difference" field.
+func DifferenceLT(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLT(FieldDifference, v))
+}
+
+// DifferenceLTE applies the LTE predicate on the "difference" field.
+func DifferenceLTE(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLTE(FieldDifference, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasCar applies the HasEdge predicate on the "car" edge.
+func HasCar() predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, CarTable, CarColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCarWith applies the HasEdge predicate on the "car" edge with a given conditions (other predicates).
+func HasCarWith(preds ...predicate.Car) predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := newCarStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPrev applies the HasEdge predicate on the "prev" edge.
+func HasPrev() predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, PrevTable, PrevColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrevWith applies the HasEdge predicate on the "prev" edge with a given conditions (other predicates).
+func HasPrevWith(preds ...predicate.OdometerRecord) predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := newPrevStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNext applies the HasEdge predicate on the "next" edge.
+func HasNext() predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, NextTable, NextColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNextWith applies the HasEdge predicate on the "next" edge with a given conditions (other predicates).
+func HasNextWith(preds ...predicate.OdometerRecord) predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := newNextStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

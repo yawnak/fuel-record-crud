@@ -4,10 +4,14 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 )
 
@@ -16,6 +20,79 @@ type OdometerRecordCreate struct {
 	config
 	mutation *OdometerRecordMutation
 	hooks    []Hook
+}
+
+// SetCurrentFuelLiters sets the "current_fuel_liters" field.
+func (orc *OdometerRecordCreate) SetCurrentFuelLiters(f float64) *OdometerRecordCreate {
+	orc.mutation.SetCurrentFuelLiters(f)
+	return orc
+}
+
+// SetDifference sets the "difference" field.
+func (orc *OdometerRecordCreate) SetDifference(f float64) *OdometerRecordCreate {
+	orc.mutation.SetDifference(f)
+	return orc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (orc *OdometerRecordCreate) SetCreatedAt(t time.Time) *OdometerRecordCreate {
+	orc.mutation.SetCreatedAt(t)
+	return orc
+}
+
+// SetID sets the "id" field.
+func (orc *OdometerRecordCreate) SetID(u uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetID(u)
+	return orc
+}
+
+// SetCarID sets the "car" edge to the Car entity by ID.
+func (orc *OdometerRecordCreate) SetCarID(id uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetCarID(id)
+	return orc
+}
+
+// SetCar sets the "car" edge to the Car entity.
+func (orc *OdometerRecordCreate) SetCar(c *Car) *OdometerRecordCreate {
+	return orc.SetCarID(c.ID)
+}
+
+// SetPrevID sets the "prev" edge to the OdometerRecord entity by ID.
+func (orc *OdometerRecordCreate) SetPrevID(id uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetPrevID(id)
+	return orc
+}
+
+// SetNillablePrevID sets the "prev" edge to the OdometerRecord entity by ID if the given value is not nil.
+func (orc *OdometerRecordCreate) SetNillablePrevID(id *uuid.UUID) *OdometerRecordCreate {
+	if id != nil {
+		orc = orc.SetPrevID(*id)
+	}
+	return orc
+}
+
+// SetPrev sets the "prev" edge to the OdometerRecord entity.
+func (orc *OdometerRecordCreate) SetPrev(o *OdometerRecord) *OdometerRecordCreate {
+	return orc.SetPrevID(o.ID)
+}
+
+// SetNextID sets the "next" edge to the OdometerRecord entity by ID.
+func (orc *OdometerRecordCreate) SetNextID(id uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetNextID(id)
+	return orc
+}
+
+// SetNillableNextID sets the "next" edge to the OdometerRecord entity by ID if the given value is not nil.
+func (orc *OdometerRecordCreate) SetNillableNextID(id *uuid.UUID) *OdometerRecordCreate {
+	if id != nil {
+		orc = orc.SetNextID(*id)
+	}
+	return orc
+}
+
+// SetNext sets the "next" edge to the OdometerRecord entity.
+func (orc *OdometerRecordCreate) SetNext(o *OdometerRecord) *OdometerRecordCreate {
+	return orc.SetNextID(o.ID)
 }
 
 // Mutation returns the OdometerRecordMutation object of the builder.
@@ -52,6 +129,28 @@ func (orc *OdometerRecordCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (orc *OdometerRecordCreate) check() error {
+	if _, ok := orc.mutation.CurrentFuelLiters(); !ok {
+		return &ValidationError{Name: "current_fuel_liters", err: errors.New(`ent: missing required field "OdometerRecord.current_fuel_liters"`)}
+	}
+	if v, ok := orc.mutation.CurrentFuelLiters(); ok {
+		if err := odometerrecord.CurrentFuelLitersValidator(v); err != nil {
+			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.current_fuel_liters": %w`, err)}
+		}
+	}
+	if _, ok := orc.mutation.Difference(); !ok {
+		return &ValidationError{Name: "difference", err: errors.New(`ent: missing required field "OdometerRecord.difference"`)}
+	}
+	if v, ok := orc.mutation.Difference(); ok {
+		if err := odometerrecord.DifferenceValidator(v); err != nil {
+			return &ValidationError{Name: "difference", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.difference": %w`, err)}
+		}
+	}
+	if _, ok := orc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OdometerRecord.created_at"`)}
+	}
+	if _, ok := orc.mutation.CarID(); !ok {
+		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "OdometerRecord.car"`)}
+	}
 	return nil
 }
 
@@ -66,8 +165,13 @@ func (orc *OdometerRecordCreate) sqlSave(ctx context.Context) (*OdometerRecord, 
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	orc.mutation.id = &_node.ID
 	orc.mutation.done = true
 	return _node, nil
@@ -76,8 +180,74 @@ func (orc *OdometerRecordCreate) sqlSave(ctx context.Context) (*OdometerRecord, 
 func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.CreateSpec) {
 	var (
 		_node = &OdometerRecord{config: orc.config}
-		_spec = sqlgraph.NewCreateSpec(odometerrecord.Table, sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(odometerrecord.Table, sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID))
 	)
+	if id, ok := orc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := orc.mutation.CurrentFuelLiters(); ok {
+		_spec.SetField(odometerrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
+		_node.CurrentFuelLiters = value
+	}
+	if value, ok := orc.mutation.Difference(); ok {
+		_spec.SetField(odometerrecord.FieldDifference, field.TypeFloat64, value)
+		_node.Difference = value
+	}
+	if value, ok := orc.mutation.CreatedAt(); ok {
+		_spec.SetField(odometerrecord.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if nodes := orc.mutation.CarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   odometerrecord.CarTable,
+			Columns: []string{odometerrecord.CarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.car_odometer_records = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := orc.mutation.PrevIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   odometerrecord.PrevTable,
+			Columns: []string{odometerrecord.PrevColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.odometer_record_next = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := orc.mutation.NextIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   odometerrecord.NextTable,
+			Columns: []string{odometerrecord.NextColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -125,10 +295,6 @@ func (orcb *OdometerRecordCreateBulk) Save(ctx context.Context) ([]*OdometerReco
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

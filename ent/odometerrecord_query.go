@@ -4,12 +4,15 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
@@ -21,6 +24,10 @@ type OdometerRecordQuery struct {
 	order      []odometerrecord.OrderOption
 	inters     []Interceptor
 	predicates []predicate.OdometerRecord
+	withCar    *CarQuery
+	withPrev   *OdometerRecordQuery
+	withNext   *OdometerRecordQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +64,72 @@ func (orq *OdometerRecordQuery) Order(o ...odometerrecord.OrderOption) *Odometer
 	return orq
 }
 
+// QueryCar chains the current query on the "car" edge.
+func (orq *OdometerRecordQuery) QueryCar() *CarQuery {
+	query := (&CarClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, selector),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, odometerrecord.CarTable, odometerrecord.CarColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPrev chains the current query on the "prev" edge.
+func (orq *OdometerRecordQuery) QueryPrev() *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, selector),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, odometerrecord.PrevTable, odometerrecord.PrevColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNext chains the current query on the "next" edge.
+func (orq *OdometerRecordQuery) QueryNext() *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, selector),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, odometerrecord.NextTable, odometerrecord.NextColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first OdometerRecord entity from the query.
 // Returns a *NotFoundError when no OdometerRecord was found.
 func (orq *OdometerRecordQuery) First(ctx context.Context) (*OdometerRecord, error) {
@@ -81,8 +154,8 @@ func (orq *OdometerRecordQuery) FirstX(ctx context.Context) *OdometerRecord {
 
 // FirstID returns the first OdometerRecord ID from the query.
 // Returns a *NotFoundError when no OdometerRecord ID was found.
-func (orq *OdometerRecordQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (orq *OdometerRecordQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = orq.Limit(1).IDs(setContextOp(ctx, orq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +167,7 @@ func (orq *OdometerRecordQuery) FirstID(ctx context.Context) (id int, err error)
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (orq *OdometerRecordQuery) FirstIDX(ctx context.Context) int {
+func (orq *OdometerRecordQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := orq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +205,8 @@ func (orq *OdometerRecordQuery) OnlyX(ctx context.Context) *OdometerRecord {
 // OnlyID is like Only, but returns the only OdometerRecord ID in the query.
 // Returns a *NotSingularError when more than one OdometerRecord ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (orq *OdometerRecordQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (orq *OdometerRecordQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = orq.Limit(2).IDs(setContextOp(ctx, orq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +222,7 @@ func (orq *OdometerRecordQuery) OnlyID(ctx context.Context) (id int, err error) 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (orq *OdometerRecordQuery) OnlyIDX(ctx context.Context) int {
+func (orq *OdometerRecordQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := orq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +250,7 @@ func (orq *OdometerRecordQuery) AllX(ctx context.Context) []*OdometerRecord {
 }
 
 // IDs executes the query and returns a list of OdometerRecord IDs.
-func (orq *OdometerRecordQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (orq *OdometerRecordQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if orq.ctx.Unique == nil && orq.path != nil {
 		orq.Unique(true)
 	}
@@ -189,7 +262,7 @@ func (orq *OdometerRecordQuery) IDs(ctx context.Context) (ids []int, err error) 
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (orq *OdometerRecordQuery) IDsX(ctx context.Context) []int {
+func (orq *OdometerRecordQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := orq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -249,14 +322,62 @@ func (orq *OdometerRecordQuery) Clone() *OdometerRecordQuery {
 		order:      append([]odometerrecord.OrderOption{}, orq.order...),
 		inters:     append([]Interceptor{}, orq.inters...),
 		predicates: append([]predicate.OdometerRecord{}, orq.predicates...),
+		withCar:    orq.withCar.Clone(),
+		withPrev:   orq.withPrev.Clone(),
+		withNext:   orq.withNext.Clone(),
 		// clone intermediate query.
 		sql:  orq.sql.Clone(),
 		path: orq.path,
 	}
 }
 
+// WithCar tells the query-builder to eager-load the nodes that are connected to
+// the "car" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OdometerRecordQuery) WithCar(opts ...func(*CarQuery)) *OdometerRecordQuery {
+	query := (&CarClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withCar = query
+	return orq
+}
+
+// WithPrev tells the query-builder to eager-load the nodes that are connected to
+// the "prev" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OdometerRecordQuery) WithPrev(opts ...func(*OdometerRecordQuery)) *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withPrev = query
+	return orq
+}
+
+// WithNext tells the query-builder to eager-load the nodes that are connected to
+// the "next" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OdometerRecordQuery) WithNext(opts ...func(*OdometerRecordQuery)) *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withNext = query
+	return orq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.OdometerRecord.Query().
+//		GroupBy(odometerrecord.FieldCurrentFuelLiters).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (orq *OdometerRecordQuery) GroupBy(field string, fields ...string) *OdometerRecordGroupBy {
 	orq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &OdometerRecordGroupBy{build: orq}
@@ -268,6 +389,16 @@ func (orq *OdometerRecordQuery) GroupBy(field string, fields ...string) *Odomete
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+//	}
+//
+//	client.OdometerRecord.Query().
+//		Select(odometerrecord.FieldCurrentFuelLiters).
+//		Scan(ctx, &v)
 func (orq *OdometerRecordQuery) Select(fields ...string) *OdometerRecordSelect {
 	orq.ctx.Fields = append(orq.ctx.Fields, fields...)
 	sbuild := &OdometerRecordSelect{OdometerRecordQuery: orq}
@@ -309,15 +440,28 @@ func (orq *OdometerRecordQuery) prepareQuery(ctx context.Context) error {
 
 func (orq *OdometerRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OdometerRecord, error) {
 	var (
-		nodes = []*OdometerRecord{}
-		_spec = orq.querySpec()
+		nodes       = []*OdometerRecord{}
+		withFKs     = orq.withFKs
+		_spec       = orq.querySpec()
+		loadedTypes = [3]bool{
+			orq.withCar != nil,
+			orq.withPrev != nil,
+			orq.withNext != nil,
+		}
 	)
+	if orq.withCar != nil || orq.withPrev != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, odometerrecord.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OdometerRecord).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &OdometerRecord{config: orq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -329,7 +473,118 @@ func (orq *OdometerRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := orq.withCar; query != nil {
+		if err := orq.loadCar(ctx, query, nodes, nil,
+			func(n *OdometerRecord, e *Car) { n.Edges.Car = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := orq.withPrev; query != nil {
+		if err := orq.loadPrev(ctx, query, nodes, nil,
+			func(n *OdometerRecord, e *OdometerRecord) { n.Edges.Prev = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := orq.withNext; query != nil {
+		if err := orq.loadNext(ctx, query, nodes, nil,
+			func(n *OdometerRecord, e *OdometerRecord) { n.Edges.Next = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (orq *OdometerRecordQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *Car)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OdometerRecord)
+	for i := range nodes {
+		if nodes[i].car_odometer_records == nil {
+			continue
+		}
+		fk := *nodes[i].car_odometer_records
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(car.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "car_odometer_records" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRecordQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *OdometerRecord)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OdometerRecord)
+	for i := range nodes {
+		if nodes[i].odometer_record_next == nil {
+			continue
+		}
+		fk := *nodes[i].odometer_record_next
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(odometerrecord.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "odometer_record_next" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRecordQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *OdometerRecord)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*OdometerRecord)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.OdometerRecord(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(odometerrecord.NextColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.odometer_record_next
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "odometer_record_next" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "odometer_record_next" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (orq *OdometerRecordQuery) sqlCount(ctx context.Context) (int, error) {
@@ -342,7 +597,7 @@ func (orq *OdometerRecordQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (orq *OdometerRecordQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(odometerrecord.Table, odometerrecord.Columns, sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(odometerrecord.Table, odometerrecord.Columns, sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID))
 	_spec.From = orq.sql
 	if unique := orq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

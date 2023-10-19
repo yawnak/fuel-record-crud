@@ -6,3 +6,9 @@ tasks:
     desc: "Generates ent ORM files"
     cmds:
       - go generate ./ent
+  new-migration:
+    desc: "Create a new migration"
+    cmds:
+      - 'read -p "Enter the migration name: " migrationName;
+        atlas migrate diff "$migrationName" --dir "file://./schema" --to "ent://ent/schema" --dev-url "docker://postgres/15/test?search_path=public"'
+    interactive: true

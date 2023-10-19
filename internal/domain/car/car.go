@@ -13,13 +13,13 @@ type Car struct {
 	id              uuid.UUID
 	make            string
 	model           string
-	year            int64
+	year            int8
 	fuelHistory     FuelHistory
 	odometerHistory OdometerHistory
 	//currentOdometerRecord History[*OdometerRecord]
 }
 
-func New(make, model string, year int64, currentFuel float64) Car {
+func New(make, model string, year int8, currentFuel float64) Car {
 	return Car{
 		id:    uuid.New(),
 		make:  make,
@@ -30,7 +30,7 @@ func New(make, model string, year int64, currentFuel float64) Car {
 }
 
 func UnmarshalCarFromDatabase(
-	id uuid.UUID, make string, model string, year int64, lastFuelRecord FuelRecord,
+	id uuid.UUID, make string, model string, year int8, lastFuelRecord FuelRecord,
 ) Car {
 	return Car{
 		id:    id,
@@ -53,7 +53,7 @@ func (car *Car) Model() string {
 	return car.model
 }
 
-func (car *Car) Year() int64 {
+func (car *Car) Year() int8 {
 	return car.year
 }
 
@@ -73,6 +73,6 @@ func (car *Car) SetModel(model string) {
 	car.model = model
 }
 
-func (car *Car) SetYear(year int64) {
+func (car *Car) SetYear(year int8) {
 	car.year = year
 }

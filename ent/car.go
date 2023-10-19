@@ -16,16 +16,46 @@ import (
 type Car struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// CarID holds the value of the "car_id" field.
-	CarID uuid.UUID `json:"car_id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Make holds the value of the "make" field.
 	Make string `json:"make,omitempty"`
 	// Model holds the value of the "model" field.
 	Model string `json:"model,omitempty"`
 	// Year holds the value of the "year" field.
-	Year         int8 `json:"year,omitempty"`
+	Year int8 `json:"year,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the CarQuery when eager-loading is set.
+	Edges        CarEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// CarEdges holds the relations/edges for other nodes in the graph.
+type CarEdges struct {
+	// FuelRecords holds the value of the fuel_records edge.
+	FuelRecords []*FuelRecord `json:"fuel_records,omitempty"`
+	// OdometerRecords holds the value of the odometer_records edge.
+	OdometerRecords []*OdometerRecord `json:"odometer_records,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// FuelRecordsOrErr returns the FuelRecords value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) FuelRecordsOrErr() ([]*FuelRecord, error) {
+	if e.loadedTypes[0] {
+		return e.FuelRecords, nil
+	}
+	return nil, &NotLoadedError{edge: "fuel_records"}
+}
+
+// OdometerRecordsOrErr returns the OdometerRecords value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) OdometerRecordsOrErr() ([]*OdometerRecord, error) {
+	if e.loadedTypes[1] {
+		return e.OdometerRecords, nil
+	}
+	return nil, &NotLoadedError{edge: "odometer_records"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -33,11 +63,11 @@ func (*Car) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case car.FieldID, car.FieldYear:
+		case car.FieldYear:
 			values[i] = new(sql.NullInt64)
 		case car.FieldMake, car.FieldModel:
 			values[i] = new(sql.NullString)
-		case car.FieldCarID:
+		case car.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -55,16 +85,10 @@ func (c *Car) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case car.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			c.ID = int(value.Int64)
-		case car.FieldCarID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field car_id", values[i])
+				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				c.CarID = *value
+				c.ID = *value
 			}
 		case car.FieldMake:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -97,6 +121,16 @@ func (c *Car) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
 }
 
+// QueryFuelRecords queries the "fuel_records" edge of the Car entity.
+func (c *Car) QueryFuelRecords() *FuelRecordQuery {
+	return NewCarClient(c.config).QueryFuelRecords(c)
+}
+
+// QueryOdometerRecords queries the "odometer_records" edge of the Car entity.
+func (c *Car) QueryOdometerRecords() *OdometerRecordQuery {
+	return NewCarClient(c.config).QueryOdometerRecords(c)
+}
+
 // Update returns a builder for updating this Car.
 // Note that you need to call Car.Unwrap() before calling this method if this Car
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -120,9 +154,6 @@ func (c *Car) String() string {
 	var builder strings.Builder
 	builder.WriteString("Car(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
-	builder.WriteString("car_id=")
-	builder.WriteString(fmt.Sprintf("%v", c.CarID))
-	builder.WriteString(", ")
 	builder.WriteString("make=")
 	builder.WriteString(c.Make)
 	builder.WriteString(", ")
