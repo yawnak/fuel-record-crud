@@ -5,6 +5,7 @@ includes:
   atlas: tasks/atlas.tasks.yml
   install: tasks/install.tasks.yml
   docker: tasks/docker.tasks.yml
+  ent: tasks/ent.tasks.yml
 
 silent: false
 

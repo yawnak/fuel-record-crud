@@ -7,7 +7,10 @@ require (
 	github.com/google/uuid v1.3.1
 )
 
-require golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+require (
+	entgo.io/ent v0.12.4 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+)
 
 require (
 	github.com/gobuffalo/envy v1.7.0 // indirect
