@@ -2,6 +2,7 @@ version: "3"
 
 vars:
   PATH_TO_DOCKERFILE: "./docker/Dockerfile"
+  IMAGE_NAME: "yawnak/fuelrecordcrud"
 
 
 tasks:
@@ -9,4 +10,4 @@ tasks:
     desc: "Builds the docker image"
     cmds:
       - 'read -p "Enter image tag: " imageTag;
-        docker build -t $imageTag -f {{ .PATH_TO_DOCKERFILE }} .'
+        docker build -t "{{.IMAGE_NAME}}:$imageTag" -f {{ .PATH_TO_DOCKERFILE }} .'
