@@ -24,10 +24,10 @@ const (
 	FieldNextFuelRecordID = "next_fuel_record_id"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
-	// EdgePrev holds the string denoting the prev edge name in mutations.
-	EdgePrev = "prev"
 	// EdgeNext holds the string denoting the next edge name in mutations.
 	EdgeNext = "next"
+	// EdgePrev holds the string denoting the prev edge name in mutations.
+	EdgePrev = "prev"
 	// CarFieldID holds the string denoting the ID field of the Car.
 	CarFieldID = "car_id"
 	// Table holds the table name of the fuelrecord in the database.
@@ -39,14 +39,14 @@ const (
 	CarInverseTable = "cars"
 	// CarColumn is the table column denoting the car relation/edge.
 	CarColumn = "car_id"
-	// PrevTable is the table that holds the prev relation/edge.
-	PrevTable = "fuel_records"
-	// PrevColumn is the table column denoting the prev relation/edge.
-	PrevColumn = "next_fuel_record_id"
 	// NextTable is the table that holds the next relation/edge.
 	NextTable = "fuel_records"
 	// NextColumn is the table column denoting the next relation/edge.
 	NextColumn = "next_fuel_record_id"
+	// PrevTable is the table that holds the prev relation/edge.
+	PrevTable = "fuel_records"
+	// PrevColumn is the table column denoting the prev relation/edge.
+	PrevColumn = "next_fuel_record_id"
 )
 
 // Columns holds all SQL columns for fuelrecord fields.
@@ -114,17 +114,17 @@ func ByCarField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByPrevField orders the results by prev field.
-func ByPrevField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPrevStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByNextField orders the results by next field.
 func ByNextField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newNextStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByPrevField orders the results by prev field.
+func ByPrevField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPrevStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newCarStep() *sqlgraph.Step {
@@ -134,17 +134,17 @@ func newCarStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, CarTable, CarColumn),
 	)
 }
-func newPrevStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, PrevTable, PrevColumn),
-	)
-}
 func newNextStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, NextTable, NextColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, NextTable, NextColumn),
+	)
+}
+func newPrevStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, PrevTable, PrevColumn),
 	)
 }

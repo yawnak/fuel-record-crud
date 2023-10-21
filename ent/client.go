@@ -502,22 +502,6 @@ func (c *FuelRecordClient) QueryCar(fr *FuelRecord) *CarQuery {
 	return query
 }
 
-// QueryPrev queries the prev edge of a FuelRecord.
-func (c *FuelRecordClient) QueryPrev(fr *FuelRecord) *FuelRecordQuery {
-	query := (&FuelRecordClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := fr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, id),
-			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, fuelrecord.PrevTable, fuelrecord.PrevColumn),
-		)
-		fromV = sqlgraph.Neighbors(fr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryNext queries the next edge of a FuelRecord.
 func (c *FuelRecordClient) QueryNext(fr *FuelRecord) *FuelRecordQuery {
 	query := (&FuelRecordClient{config: c.config}).Query()
@@ -526,7 +510,23 @@ func (c *FuelRecordClient) QueryNext(fr *FuelRecord) *FuelRecordQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, id),
 			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, fuelrecord.NextTable, fuelrecord.NextColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, fuelrecord.NextTable, fuelrecord.NextColumn),
+		)
+		fromV = sqlgraph.Neighbors(fr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPrev queries the prev edge of a FuelRecord.
+func (c *FuelRecordClient) QueryPrev(fr *FuelRecord) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := fr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, id),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, fuelrecord.PrevTable, fuelrecord.PrevColumn),
 		)
 		fromV = sqlgraph.Neighbors(fr.driver.Dialect(), step)
 		return fromV, nil

@@ -62,13 +62,12 @@ func TestCRUD(t *testing.T) {
 		log.Fatal(err)
 	}
 	if secondFuel, err = client.FuelRecord.Create().SetID(nextFuelUUID).SetCarID(carUUID).SetCurrentFuelLiters(20).SetDifference(10).SetCreatedAt(time.Now()).
-		SetNextID(fuelUUID).Save(ctx); err != nil {
+		SetPrev(firstFuel).Save(ctx); err != nil {
 		log.Fatal(err)
 	}
 
 	client.OdometerRecord.Create().SetID(odometerUUID).SetCarID(carUUID).SetCurrentFuelLiters(100).SetDifference(100).SetCreatedAt(time.Now()).SaveX(ctx)
 	client.OdometerRecord.Create().SetID(nextOdometerUUID).SetCarID(carUUID).SetCurrentFuelLiters(200).SetDifference(100).SetCreatedAt(time.Now()).SetPrevID(odometerUUID).SaveX(ctx)
-
 
 	fmt.Println(client.FuelRecord.QueryNext(firstFuel).All(ctx))
 	fmt.Println(client.FuelRecord.QueryPrev(secondFuel).All(ctx))

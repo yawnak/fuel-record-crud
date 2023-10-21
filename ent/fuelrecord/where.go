@@ -274,35 +274,12 @@ func HasCarWith(preds ...predicate.Car) predicate.FuelRecord {
 	})
 }
 
-// HasPrev applies the HasEdge predicate on the "prev" edge.
-func HasPrev() predicate.FuelRecord {
-	return predicate.FuelRecord(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, PrevTable, PrevColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasPrevWith applies the HasEdge predicate on the "prev" edge with a given conditions (other predicates).
-func HasPrevWith(preds ...predicate.FuelRecord) predicate.FuelRecord {
-	return predicate.FuelRecord(func(s *sql.Selector) {
-		step := newPrevStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasNext applies the HasEdge predicate on the "next" edge.
 func HasNext() predicate.FuelRecord {
 	return predicate.FuelRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, NextTable, NextColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, NextTable, NextColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -312,6 +289,29 @@ func HasNext() predicate.FuelRecord {
 func HasNextWith(preds ...predicate.FuelRecord) predicate.FuelRecord {
 	return predicate.FuelRecord(func(s *sql.Selector) {
 		step := newNextStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPrev applies the HasEdge predicate on the "prev" edge.
+func HasPrev() predicate.FuelRecord {
+	return predicate.FuelRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, PrevTable, PrevColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrevWith applies the HasEdge predicate on the "prev" edge with a given conditions (other predicates).
+func HasPrevWith(preds ...predicate.FuelRecord) predicate.FuelRecord {
+	return predicate.FuelRecord(func(s *sql.Selector) {
+		step := newPrevStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

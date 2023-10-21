@@ -43,7 +43,7 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "fuel_records_fuel_records_next",
+				Symbol:     "fuel_records_fuel_records_prev",
 				Columns:    []*schema.Column{FuelRecordsColumns[5]},
 				RefColumns: []*schema.Column{FuelRecordsColumns[0]},
 				OnDelete:   schema.SetNull,

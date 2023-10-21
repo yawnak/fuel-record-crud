@@ -39,10 +39,10 @@ type FuelRecord struct {
 type FuelRecordEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
-	// Prev holds the value of the prev edge.
-	Prev *FuelRecord `json:"prev,omitempty"`
 	// Next holds the value of the next edge.
 	Next *FuelRecord `json:"next,omitempty"`
+	// Prev holds the value of the prev edge.
+	Prev *FuelRecord `json:"prev,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -61,23 +61,10 @@ func (e FuelRecordEdges) CarOrErr() (*Car, error) {
 	return nil, &NotLoadedError{edge: "car"}
 }
 
-// PrevOrErr returns the Prev value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e FuelRecordEdges) PrevOrErr() (*FuelRecord, error) {
-	if e.loadedTypes[1] {
-		if e.Prev == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: fuelrecord.Label}
-		}
-		return e.Prev, nil
-	}
-	return nil, &NotLoadedError{edge: "prev"}
-}
-
 // NextOrErr returns the Next value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e FuelRecordEdges) NextOrErr() (*FuelRecord, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Next == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: fuelrecord.Label}
@@ -85,6 +72,19 @@ func (e FuelRecordEdges) NextOrErr() (*FuelRecord, error) {
 		return e.Next, nil
 	}
 	return nil, &NotLoadedError{edge: "next"}
+}
+
+// PrevOrErr returns the Prev value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FuelRecordEdges) PrevOrErr() (*FuelRecord, error) {
+	if e.loadedTypes[2] {
+		if e.Prev == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: fuelrecord.Label}
+		}
+		return e.Prev, nil
+	}
+	return nil, &NotLoadedError{edge: "prev"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -167,14 +167,14 @@ func (fr *FuelRecord) QueryCar() *CarQuery {
 	return NewFuelRecordClient(fr.config).QueryCar(fr)
 }
 
-// QueryPrev queries the "prev" edge of the FuelRecord entity.
-func (fr *FuelRecord) QueryPrev() *FuelRecordQuery {
-	return NewFuelRecordClient(fr.config).QueryPrev(fr)
-}
-
 // QueryNext queries the "next" edge of the FuelRecord entity.
 func (fr *FuelRecord) QueryNext() *FuelRecordQuery {
 	return NewFuelRecordClient(fr.config).QueryNext(fr)
+}
+
+// QueryPrev queries the "prev" edge of the FuelRecord entity.
+func (fr *FuelRecord) QueryPrev() *FuelRecordQuery {
+	return NewFuelRecordClient(fr.config).QueryPrev(fr)
 }
 
 // Update returns a builder for updating this FuelRecord.

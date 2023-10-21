@@ -71,25 +71,6 @@ func (frc *FuelRecordCreate) SetCar(c *Car) *FuelRecordCreate {
 	return frc.SetCarID(c.ID)
 }
 
-// SetPrevID sets the "prev" edge to the FuelRecord entity by ID.
-func (frc *FuelRecordCreate) SetPrevID(id uuid.UUID) *FuelRecordCreate {
-	frc.mutation.SetPrevID(id)
-	return frc
-}
-
-// SetNillablePrevID sets the "prev" edge to the FuelRecord entity by ID if the given value is not nil.
-func (frc *FuelRecordCreate) SetNillablePrevID(id *uuid.UUID) *FuelRecordCreate {
-	if id != nil {
-		frc = frc.SetPrevID(*id)
-	}
-	return frc
-}
-
-// SetPrev sets the "prev" edge to the FuelRecord entity.
-func (frc *FuelRecordCreate) SetPrev(f *FuelRecord) *FuelRecordCreate {
-	return frc.SetPrevID(f.ID)
-}
-
 // SetNextID sets the "next" edge to the FuelRecord entity by ID.
 func (frc *FuelRecordCreate) SetNextID(id uuid.UUID) *FuelRecordCreate {
 	frc.mutation.SetNextID(id)
@@ -107,6 +88,25 @@ func (frc *FuelRecordCreate) SetNillableNextID(id *uuid.UUID) *FuelRecordCreate 
 // SetNext sets the "next" edge to the FuelRecord entity.
 func (frc *FuelRecordCreate) SetNext(f *FuelRecord) *FuelRecordCreate {
 	return frc.SetNextID(f.ID)
+}
+
+// SetPrevID sets the "prev" edge to the FuelRecord entity by ID.
+func (frc *FuelRecordCreate) SetPrevID(id uuid.UUID) *FuelRecordCreate {
+	frc.mutation.SetPrevID(id)
+	return frc
+}
+
+// SetNillablePrevID sets the "prev" edge to the FuelRecord entity by ID if the given value is not nil.
+func (frc *FuelRecordCreate) SetNillablePrevID(id *uuid.UUID) *FuelRecordCreate {
+	if id != nil {
+		frc = frc.SetPrevID(*id)
+	}
+	return frc
+}
+
+// SetPrev sets the "prev" edge to the FuelRecord entity.
+func (frc *FuelRecordCreate) SetPrev(f *FuelRecord) *FuelRecordCreate {
+	return frc.SetPrevID(f.ID)
 }
 
 // Mutation returns the FuelRecordMutation object of the builder.
@@ -227,12 +227,12 @@ func (frc *FuelRecordCreate) createSpec() (*FuelRecord, *sqlgraph.CreateSpec) {
 		_node.CarID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := frc.mutation.PrevIDs(); len(nodes) > 0 {
+	if nodes := frc.mutation.NextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
-			Table:   fuelrecord.PrevTable,
-			Columns: []string{fuelrecord.PrevColumn},
+			Table:   fuelrecord.NextTable,
+			Columns: []string{fuelrecord.NextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
@@ -244,12 +244,12 @@ func (frc *FuelRecordCreate) createSpec() (*FuelRecord, *sqlgraph.CreateSpec) {
 		_node.NextFuelRecordID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := frc.mutation.NextIDs(); len(nodes) > 0 {
+	if nodes := frc.mutation.PrevIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   fuelrecord.NextTable,
-			Columns: []string{fuelrecord.NextColumn},
+			Table:   fuelrecord.PrevTable,
+			Columns: []string{fuelrecord.PrevColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
