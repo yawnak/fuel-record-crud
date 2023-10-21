@@ -129,11 +129,6 @@ func (cc *CarCreate) check() error {
 	if _, ok := cc.mutation.Year(); !ok {
 		return &ValidationError{Name: "year", err: errors.New(`ent: missing required field "Car.year"`)}
 	}
-	if v, ok := cc.mutation.Year(); ok {
-		if err := car.YearValidator(v); err != nil {
-			return &ValidationError{Name: "year", err: fmt.Errorf(`ent: validator failed for field "Car.year": %w`, err)}
-		}
-	}
 	return nil
 }
 

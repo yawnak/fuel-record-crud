@@ -14,17 +14,9 @@ func (car *Car) Model() string {
 	return car.model
 }
 
-func (car *Car) Year() int8 {
+func (car *Car) Year() int16 {
 	return car.year
 }
-
-// func (car *Car) CurrentFuelRecord() FuelRecord {
-// 	return
-// }
-
-// func (car *Car) CurrentOdometerRecord() OdometerRecord {
-// 	return car.currentOdometerRecord
-// }
 
 func (car *Car) SetMake(make string) {
 	car.make = make
@@ -34,6 +26,6 @@ func (car *Car) SetModel(model string) {
 	car.model = model
 }
 
-func (car *Car) SetYear(year int8) {
+func (car *Car) SetYear(year int16) {
 	car.year = year
 }

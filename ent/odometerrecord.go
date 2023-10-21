@@ -29,7 +29,7 @@ type OdometerRecord struct {
 	// The values are being populated by the OdometerRecordQuery when eager-loading is set.
 	Edges                OdometerRecordEdges `json:"edges"`
 	car_odometer_records *uuid.UUID
-	odometer_record_next *uuid.UUID
+	odometer_record_prev *uuid.UUID
 	selectValues         sql.SelectValues
 }
 
@@ -37,10 +37,10 @@ type OdometerRecord struct {
 type OdometerRecordEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
-	// Prev holds the value of the prev edge.
-	Prev *OdometerRecord `json:"prev,omitempty"`
 	// Next holds the value of the next edge.
 	Next *OdometerRecord `json:"next,omitempty"`
+	// Prev holds the value of the prev edge.
+	Prev *OdometerRecord `json:"prev,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -59,23 +59,10 @@ func (e OdometerRecordEdges) CarOrErr() (*Car, error) {
 	return nil, &NotLoadedError{edge: "car"}
 }
 
-// PrevOrErr returns the Prev value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e OdometerRecordEdges) PrevOrErr() (*OdometerRecord, error) {
-	if e.loadedTypes[1] {
-		if e.Prev == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: odometerrecord.Label}
-		}
-		return e.Prev, nil
-	}
-	return nil, &NotLoadedError{edge: "prev"}
-}
-
 // NextOrErr returns the Next value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e OdometerRecordEdges) NextOrErr() (*OdometerRecord, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Next == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: odometerrecord.Label}
@@ -83,6 +70,19 @@ func (e OdometerRecordEdges) NextOrErr() (*OdometerRecord, error) {
 		return e.Next, nil
 	}
 	return nil, &NotLoadedError{edge: "next"}
+}
+
+// PrevOrErr returns the Prev value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OdometerRecordEdges) PrevOrErr() (*OdometerRecord, error) {
+	if e.loadedTypes[2] {
+		if e.Prev == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: odometerrecord.Label}
+		}
+		return e.Prev, nil
+	}
+	return nil, &NotLoadedError{edge: "prev"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -98,7 +98,7 @@ func (*OdometerRecord) scanValues(columns []string) ([]any, error) {
 			values[i] = new(uuid.UUID)
 		case odometerrecord.ForeignKeys[0]: // car_odometer_records
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case odometerrecord.ForeignKeys[1]: // odometer_record_next
+		case odometerrecord.ForeignKeys[1]: // odometer_record_prev
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -148,10 +148,10 @@ func (or *OdometerRecord) assignValues(columns []string, values []any) error {
 			}
 		case odometerrecord.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field odometer_record_next", values[i])
+				return fmt.Errorf("unexpected type %T for field odometer_record_prev", values[i])
 			} else if value.Valid {
-				or.odometer_record_next = new(uuid.UUID)
-				*or.odometer_record_next = *value.S.(*uuid.UUID)
+				or.odometer_record_prev = new(uuid.UUID)
+				*or.odometer_record_prev = *value.S.(*uuid.UUID)
 			}
 		default:
 			or.selectValues.Set(columns[i], values[i])
@@ -171,14 +171,14 @@ func (or *OdometerRecord) QueryCar() *CarQuery {
 	return NewOdometerRecordClient(or.config).QueryCar(or)
 }
 
-// QueryPrev queries the "prev" edge of the OdometerRecord entity.
-func (or *OdometerRecord) QueryPrev() *OdometerRecordQuery {
-	return NewOdometerRecordClient(or.config).QueryPrev(or)
-}
-
 // QueryNext queries the "next" edge of the OdometerRecord entity.
 func (or *OdometerRecord) QueryNext() *OdometerRecordQuery {
 	return NewOdometerRecordClient(or.config).QueryNext(or)
+}
+
+// QueryPrev queries the "prev" edge of the OdometerRecord entity.
+func (or *OdometerRecord) QueryPrev() *OdometerRecordQuery {
+	return NewOdometerRecordClient(or.config).QueryPrev(or)
 }
 
 // Update returns a builder for updating this OdometerRecord.

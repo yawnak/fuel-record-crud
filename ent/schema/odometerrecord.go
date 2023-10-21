@@ -26,6 +26,6 @@ func (OdometerRecord) Fields() []ent.Field {
 func (OdometerRecord) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("car", Car.Type).Ref("odometer_records").Unique().Required(),
-		edge.To("next", OdometerRecord.Type).Unique().From("prev").Unique(),
+		edge.To("prev", OdometerRecord.Type).Unique().From("next").Unique().Immutable(),
 	}
 }

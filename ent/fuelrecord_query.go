@@ -25,8 +25,8 @@ type FuelRecordQuery struct {
 	inters     []Interceptor
 	predicates []predicate.FuelRecord
 	withCar    *CarQuery
-	withPrev   *FuelRecordQuery
 	withNext   *FuelRecordQuery
+	withPrev   *FuelRecordQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -86,28 +86,6 @@ func (frq *FuelRecordQuery) QueryCar() *CarQuery {
 	return query
 }
 
-// QueryPrev chains the current query on the "prev" edge.
-func (frq *FuelRecordQuery) QueryPrev() *FuelRecordQuery {
-	query := (&FuelRecordClient{config: frq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := frq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := frq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, selector),
-			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, fuelrecord.PrevTable, fuelrecord.PrevColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(frq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryNext chains the current query on the "next" edge.
 func (frq *FuelRecordQuery) QueryNext() *FuelRecordQuery {
 	query := (&FuelRecordClient{config: frq.config}).Query()
@@ -122,7 +100,29 @@ func (frq *FuelRecordQuery) QueryNext() *FuelRecordQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, selector),
 			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, fuelrecord.NextTable, fuelrecord.NextColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, fuelrecord.NextTable, fuelrecord.NextColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(frq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPrev chains the current query on the "prev" edge.
+func (frq *FuelRecordQuery) QueryPrev() *FuelRecordQuery {
+	query := (&FuelRecordClient{config: frq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := frq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := frq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelrecord.Table, fuelrecord.FieldID, selector),
+			sqlgraph.To(fuelrecord.Table, fuelrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, fuelrecord.PrevTable, fuelrecord.PrevColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(frq.driver.Dialect(), step)
 		return fromU, nil
@@ -323,8 +323,8 @@ func (frq *FuelRecordQuery) Clone() *FuelRecordQuery {
 		inters:     append([]Interceptor{}, frq.inters...),
 		predicates: append([]predicate.FuelRecord{}, frq.predicates...),
 		withCar:    frq.withCar.Clone(),
-		withPrev:   frq.withPrev.Clone(),
 		withNext:   frq.withNext.Clone(),
+		withPrev:   frq.withPrev.Clone(),
 		// clone intermediate query.
 		sql:  frq.sql.Clone(),
 		path: frq.path,
@@ -342,17 +342,6 @@ func (frq *FuelRecordQuery) WithCar(opts ...func(*CarQuery)) *FuelRecordQuery {
 	return frq
 }
 
-// WithPrev tells the query-builder to eager-load the nodes that are connected to
-// the "prev" edge. The optional arguments are used to configure the query builder of the edge.
-func (frq *FuelRecordQuery) WithPrev(opts ...func(*FuelRecordQuery)) *FuelRecordQuery {
-	query := (&FuelRecordClient{config: frq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	frq.withPrev = query
-	return frq
-}
-
 // WithNext tells the query-builder to eager-load the nodes that are connected to
 // the "next" edge. The optional arguments are used to configure the query builder of the edge.
 func (frq *FuelRecordQuery) WithNext(opts ...func(*FuelRecordQuery)) *FuelRecordQuery {
@@ -361,6 +350,17 @@ func (frq *FuelRecordQuery) WithNext(opts ...func(*FuelRecordQuery)) *FuelRecord
 		opt(query)
 	}
 	frq.withNext = query
+	return frq
+}
+
+// WithPrev tells the query-builder to eager-load the nodes that are connected to
+// the "prev" edge. The optional arguments are used to configure the query builder of the edge.
+func (frq *FuelRecordQuery) WithPrev(opts ...func(*FuelRecordQuery)) *FuelRecordQuery {
+	query := (&FuelRecordClient{config: frq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	frq.withPrev = query
 	return frq
 }
 
@@ -445,11 +445,11 @@ func (frq *FuelRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		_spec       = frq.querySpec()
 		loadedTypes = [3]bool{
 			frq.withCar != nil,
-			frq.withPrev != nil,
 			frq.withNext != nil,
+			frq.withPrev != nil,
 		}
 	)
-	if frq.withCar != nil || frq.withPrev != nil {
+	if frq.withCar != nil || frq.withNext != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -479,15 +479,15 @@ func (frq *FuelRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
-	if query := frq.withPrev; query != nil {
-		if err := frq.loadPrev(ctx, query, nodes, nil,
-			func(n *FuelRecord, e *FuelRecord) { n.Edges.Prev = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := frq.withNext; query != nil {
 		if err := frq.loadNext(ctx, query, nodes, nil,
 			func(n *FuelRecord, e *FuelRecord) { n.Edges.Next = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := frq.withPrev; query != nil {
+		if err := frq.loadPrev(ctx, query, nodes, nil,
+			func(n *FuelRecord, e *FuelRecord) { n.Edges.Prev = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -526,14 +526,14 @@ func (frq *FuelRecordQuery) loadCar(ctx context.Context, query *CarQuery, nodes 
 	}
 	return nil
 }
-func (frq *FuelRecordQuery) loadPrev(ctx context.Context, query *FuelRecordQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *FuelRecord)) error {
+func (frq *FuelRecordQuery) loadNext(ctx context.Context, query *FuelRecordQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *FuelRecord)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*FuelRecord)
 	for i := range nodes {
-		if nodes[i].fuel_record_next == nil {
+		if nodes[i].fuel_record_prev == nil {
 			continue
 		}
-		fk := *nodes[i].fuel_record_next
+		fk := *nodes[i].fuel_record_prev
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -550,7 +550,7 @@ func (frq *FuelRecordQuery) loadPrev(ctx context.Context, query *FuelRecordQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "fuel_record_next" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "fuel_record_prev" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -558,7 +558,7 @@ func (frq *FuelRecordQuery) loadPrev(ctx context.Context, query *FuelRecordQuery
 	}
 	return nil
 }
-func (frq *FuelRecordQuery) loadNext(ctx context.Context, query *FuelRecordQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *FuelRecord)) error {
+func (frq *FuelRecordQuery) loadPrev(ctx context.Context, query *FuelRecordQuery, nodes []*FuelRecord, init func(*FuelRecord), assign func(*FuelRecord, *FuelRecord)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*FuelRecord)
 	for i := range nodes {
@@ -567,20 +567,20 @@ func (frq *FuelRecordQuery) loadNext(ctx context.Context, query *FuelRecordQuery
 	}
 	query.withFKs = true
 	query.Where(predicate.FuelRecord(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(fuelrecord.NextColumn), fks...))
+		s.Where(sql.InValues(s.C(fuelrecord.PrevColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.fuel_record_next
+		fk := n.fuel_record_prev
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "fuel_record_next" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "fuel_record_prev" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "fuel_record_next" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "fuel_record_prev" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

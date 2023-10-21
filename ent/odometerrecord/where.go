@@ -214,35 +214,12 @@ func HasCarWith(preds ...predicate.Car) predicate.OdometerRecord {
 	})
 }
 
-// HasPrev applies the HasEdge predicate on the "prev" edge.
-func HasPrev() predicate.OdometerRecord {
-	return predicate.OdometerRecord(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, PrevTable, PrevColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasPrevWith applies the HasEdge predicate on the "prev" edge with a given conditions (other predicates).
-func HasPrevWith(preds ...predicate.OdometerRecord) predicate.OdometerRecord {
-	return predicate.OdometerRecord(func(s *sql.Selector) {
-		step := newPrevStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasNext applies the HasEdge predicate on the "next" edge.
 func HasNext() predicate.OdometerRecord {
 	return predicate.OdometerRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, NextTable, NextColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, NextTable, NextColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -252,6 +229,29 @@ func HasNext() predicate.OdometerRecord {
 func HasNextWith(preds ...predicate.OdometerRecord) predicate.OdometerRecord {
 	return predicate.OdometerRecord(func(s *sql.Selector) {
 		step := newNextStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPrev applies the HasEdge predicate on the "prev" edge.
+func HasPrev() predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, PrevTable, PrevColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrevWith applies the HasEdge predicate on the "prev" edge with a given conditions (other predicates).
+func HasPrevWith(preds ...predicate.OdometerRecord) predicate.OdometerRecord {
+	return predicate.OdometerRecord(func(s *sql.Selector) {
+		step := newPrevStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

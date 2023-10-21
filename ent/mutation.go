@@ -698,10 +698,10 @@ type FuelRecordMutation struct {
 	clearedFields          map[string]struct{}
 	car                    *uuid.UUID
 	clearedcar             bool
-	prev                   *uuid.UUID
-	clearedprev            bool
 	next                   *uuid.UUID
 	clearednext            bool
+	prev                   *uuid.UUID
+	clearedprev            bool
 	done                   bool
 	oldValue               func(context.Context) (*FuelRecord, error)
 	predicates             []predicate.FuelRecord
@@ -998,45 +998,6 @@ func (m *FuelRecordMutation) ResetCar() {
 	m.clearedcar = false
 }
 
-// SetPrevID sets the "prev" edge to the FuelRecord entity by id.
-func (m *FuelRecordMutation) SetPrevID(id uuid.UUID) {
-	m.prev = &id
-}
-
-// ClearPrev clears the "prev" edge to the FuelRecord entity.
-func (m *FuelRecordMutation) ClearPrev() {
-	m.clearedprev = true
-}
-
-// PrevCleared reports if the "prev" edge to the FuelRecord entity was cleared.
-func (m *FuelRecordMutation) PrevCleared() bool {
-	return m.clearedprev
-}
-
-// PrevID returns the "prev" edge ID in the mutation.
-func (m *FuelRecordMutation) PrevID() (id uuid.UUID, exists bool) {
-	if m.prev != nil {
-		return *m.prev, true
-	}
-	return
-}
-
-// PrevIDs returns the "prev" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PrevID instead. It exists only for internal usage by the builders.
-func (m *FuelRecordMutation) PrevIDs() (ids []uuid.UUID) {
-	if id := m.prev; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetPrev resets all changes to the "prev" edge.
-func (m *FuelRecordMutation) ResetPrev() {
-	m.prev = nil
-	m.clearedprev = false
-}
-
 // SetNextID sets the "next" edge to the FuelRecord entity by id.
 func (m *FuelRecordMutation) SetNextID(id uuid.UUID) {
 	m.next = &id
@@ -1074,6 +1035,45 @@ func (m *FuelRecordMutation) NextIDs() (ids []uuid.UUID) {
 func (m *FuelRecordMutation) ResetNext() {
 	m.next = nil
 	m.clearednext = false
+}
+
+// SetPrevID sets the "prev" edge to the FuelRecord entity by id.
+func (m *FuelRecordMutation) SetPrevID(id uuid.UUID) {
+	m.prev = &id
+}
+
+// ClearPrev clears the "prev" edge to the FuelRecord entity.
+func (m *FuelRecordMutation) ClearPrev() {
+	m.clearedprev = true
+}
+
+// PrevCleared reports if the "prev" edge to the FuelRecord entity was cleared.
+func (m *FuelRecordMutation) PrevCleared() bool {
+	return m.clearedprev
+}
+
+// PrevID returns the "prev" edge ID in the mutation.
+func (m *FuelRecordMutation) PrevID() (id uuid.UUID, exists bool) {
+	if m.prev != nil {
+		return *m.prev, true
+	}
+	return
+}
+
+// PrevIDs returns the "prev" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrevID instead. It exists only for internal usage by the builders.
+func (m *FuelRecordMutation) PrevIDs() (ids []uuid.UUID) {
+	if id := m.prev; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPrev resets all changes to the "prev" edge.
+func (m *FuelRecordMutation) ResetPrev() {
+	m.prev = nil
+	m.clearedprev = false
 }
 
 // Where appends a list predicates to the FuelRecordMutation builder.
@@ -1274,11 +1274,11 @@ func (m *FuelRecordMutation) AddedEdges() []string {
 	if m.car != nil {
 		edges = append(edges, fuelrecord.EdgeCar)
 	}
-	if m.prev != nil {
-		edges = append(edges, fuelrecord.EdgePrev)
-	}
 	if m.next != nil {
 		edges = append(edges, fuelrecord.EdgeNext)
+	}
+	if m.prev != nil {
+		edges = append(edges, fuelrecord.EdgePrev)
 	}
 	return edges
 }
@@ -1291,12 +1291,12 @@ func (m *FuelRecordMutation) AddedIDs(name string) []ent.Value {
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
-	case fuelrecord.EdgePrev:
-		if id := m.prev; id != nil {
-			return []ent.Value{*id}
-		}
 	case fuelrecord.EdgeNext:
 		if id := m.next; id != nil {
+			return []ent.Value{*id}
+		}
+	case fuelrecord.EdgePrev:
+		if id := m.prev; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -1321,11 +1321,11 @@ func (m *FuelRecordMutation) ClearedEdges() []string {
 	if m.clearedcar {
 		edges = append(edges, fuelrecord.EdgeCar)
 	}
-	if m.clearedprev {
-		edges = append(edges, fuelrecord.EdgePrev)
-	}
 	if m.clearednext {
 		edges = append(edges, fuelrecord.EdgeNext)
+	}
+	if m.clearedprev {
+		edges = append(edges, fuelrecord.EdgePrev)
 	}
 	return edges
 }
@@ -1336,10 +1336,10 @@ func (m *FuelRecordMutation) EdgeCleared(name string) bool {
 	switch name {
 	case fuelrecord.EdgeCar:
 		return m.clearedcar
-	case fuelrecord.EdgePrev:
-		return m.clearedprev
 	case fuelrecord.EdgeNext:
 		return m.clearednext
+	case fuelrecord.EdgePrev:
+		return m.clearedprev
 	}
 	return false
 }
@@ -1351,11 +1351,11 @@ func (m *FuelRecordMutation) ClearEdge(name string) error {
 	case fuelrecord.EdgeCar:
 		m.ClearCar()
 		return nil
-	case fuelrecord.EdgePrev:
-		m.ClearPrev()
-		return nil
 	case fuelrecord.EdgeNext:
 		m.ClearNext()
+		return nil
+	case fuelrecord.EdgePrev:
+		m.ClearPrev()
 		return nil
 	}
 	return fmt.Errorf("unknown FuelRecord unique edge %s", name)
@@ -1368,11 +1368,11 @@ func (m *FuelRecordMutation) ResetEdge(name string) error {
 	case fuelrecord.EdgeCar:
 		m.ResetCar()
 		return nil
-	case fuelrecord.EdgePrev:
-		m.ResetPrev()
-		return nil
 	case fuelrecord.EdgeNext:
 		m.ResetNext()
+		return nil
+	case fuelrecord.EdgePrev:
+		m.ResetPrev()
 		return nil
 	}
 	return fmt.Errorf("unknown FuelRecord edge %s", name)
@@ -1392,10 +1392,10 @@ type OdometerRecordMutation struct {
 	clearedFields          map[string]struct{}
 	car                    *uuid.UUID
 	clearedcar             bool
-	prev                   *uuid.UUID
-	clearedprev            bool
 	next                   *uuid.UUID
 	clearednext            bool
+	prev                   *uuid.UUID
+	clearedprev            bool
 	done                   bool
 	oldValue               func(context.Context) (*OdometerRecord, error)
 	predicates             []predicate.OdometerRecord
@@ -1692,45 +1692,6 @@ func (m *OdometerRecordMutation) ResetCar() {
 	m.clearedcar = false
 }
 
-// SetPrevID sets the "prev" edge to the OdometerRecord entity by id.
-func (m *OdometerRecordMutation) SetPrevID(id uuid.UUID) {
-	m.prev = &id
-}
-
-// ClearPrev clears the "prev" edge to the OdometerRecord entity.
-func (m *OdometerRecordMutation) ClearPrev() {
-	m.clearedprev = true
-}
-
-// PrevCleared reports if the "prev" edge to the OdometerRecord entity was cleared.
-func (m *OdometerRecordMutation) PrevCleared() bool {
-	return m.clearedprev
-}
-
-// PrevID returns the "prev" edge ID in the mutation.
-func (m *OdometerRecordMutation) PrevID() (id uuid.UUID, exists bool) {
-	if m.prev != nil {
-		return *m.prev, true
-	}
-	return
-}
-
-// PrevIDs returns the "prev" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PrevID instead. It exists only for internal usage by the builders.
-func (m *OdometerRecordMutation) PrevIDs() (ids []uuid.UUID) {
-	if id := m.prev; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetPrev resets all changes to the "prev" edge.
-func (m *OdometerRecordMutation) ResetPrev() {
-	m.prev = nil
-	m.clearedprev = false
-}
-
 // SetNextID sets the "next" edge to the OdometerRecord entity by id.
 func (m *OdometerRecordMutation) SetNextID(id uuid.UUID) {
 	m.next = &id
@@ -1768,6 +1729,45 @@ func (m *OdometerRecordMutation) NextIDs() (ids []uuid.UUID) {
 func (m *OdometerRecordMutation) ResetNext() {
 	m.next = nil
 	m.clearednext = false
+}
+
+// SetPrevID sets the "prev" edge to the OdometerRecord entity by id.
+func (m *OdometerRecordMutation) SetPrevID(id uuid.UUID) {
+	m.prev = &id
+}
+
+// ClearPrev clears the "prev" edge to the OdometerRecord entity.
+func (m *OdometerRecordMutation) ClearPrev() {
+	m.clearedprev = true
+}
+
+// PrevCleared reports if the "prev" edge to the OdometerRecord entity was cleared.
+func (m *OdometerRecordMutation) PrevCleared() bool {
+	return m.clearedprev
+}
+
+// PrevID returns the "prev" edge ID in the mutation.
+func (m *OdometerRecordMutation) PrevID() (id uuid.UUID, exists bool) {
+	if m.prev != nil {
+		return *m.prev, true
+	}
+	return
+}
+
+// PrevIDs returns the "prev" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrevID instead. It exists only for internal usage by the builders.
+func (m *OdometerRecordMutation) PrevIDs() (ids []uuid.UUID) {
+	if id := m.prev; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPrev resets all changes to the "prev" edge.
+func (m *OdometerRecordMutation) ResetPrev() {
+	m.prev = nil
+	m.clearedprev = false
 }
 
 // Where appends a list predicates to the OdometerRecordMutation builder.
@@ -1968,11 +1968,11 @@ func (m *OdometerRecordMutation) AddedEdges() []string {
 	if m.car != nil {
 		edges = append(edges, odometerrecord.EdgeCar)
 	}
-	if m.prev != nil {
-		edges = append(edges, odometerrecord.EdgePrev)
-	}
 	if m.next != nil {
 		edges = append(edges, odometerrecord.EdgeNext)
+	}
+	if m.prev != nil {
+		edges = append(edges, odometerrecord.EdgePrev)
 	}
 	return edges
 }
@@ -1985,12 +1985,12 @@ func (m *OdometerRecordMutation) AddedIDs(name string) []ent.Value {
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
-	case odometerrecord.EdgePrev:
-		if id := m.prev; id != nil {
-			return []ent.Value{*id}
-		}
 	case odometerrecord.EdgeNext:
 		if id := m.next; id != nil {
+			return []ent.Value{*id}
+		}
+	case odometerrecord.EdgePrev:
+		if id := m.prev; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -2015,11 +2015,11 @@ func (m *OdometerRecordMutation) ClearedEdges() []string {
 	if m.clearedcar {
 		edges = append(edges, odometerrecord.EdgeCar)
 	}
-	if m.clearedprev {
-		edges = append(edges, odometerrecord.EdgePrev)
-	}
 	if m.clearednext {
 		edges = append(edges, odometerrecord.EdgeNext)
+	}
+	if m.clearedprev {
+		edges = append(edges, odometerrecord.EdgePrev)
 	}
 	return edges
 }
@@ -2030,10 +2030,10 @@ func (m *OdometerRecordMutation) EdgeCleared(name string) bool {
 	switch name {
 	case odometerrecord.EdgeCar:
 		return m.clearedcar
-	case odometerrecord.EdgePrev:
-		return m.clearedprev
 	case odometerrecord.EdgeNext:
 		return m.clearednext
+	case odometerrecord.EdgePrev:
+		return m.clearedprev
 	}
 	return false
 }
@@ -2045,11 +2045,11 @@ func (m *OdometerRecordMutation) ClearEdge(name string) error {
 	case odometerrecord.EdgeCar:
 		m.ClearCar()
 		return nil
-	case odometerrecord.EdgePrev:
-		m.ClearPrev()
-		return nil
 	case odometerrecord.EdgeNext:
 		m.ClearNext()
+		return nil
+	case odometerrecord.EdgePrev:
+		m.ClearPrev()
 		return nil
 	}
 	return fmt.Errorf("unknown OdometerRecord unique edge %s", name)
@@ -2062,11 +2062,11 @@ func (m *OdometerRecordMutation) ResetEdge(name string) error {
 	case odometerrecord.EdgeCar:
 		m.ResetCar()
 		return nil
-	case odometerrecord.EdgePrev:
-		m.ResetPrev()
-		return nil
 	case odometerrecord.EdgeNext:
 		m.ResetNext()
+		return nil
+	case odometerrecord.EdgePrev:
+		m.ResetPrev()
 		return nil
 	}
 	return fmt.Errorf("unknown OdometerRecord edge %s", name)

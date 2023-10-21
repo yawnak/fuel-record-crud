@@ -171,11 +171,6 @@ func (cu *CarUpdate) check() error {
 			return &ValidationError{Name: "model", err: fmt.Errorf(`ent: validator failed for field "Car.model": %w`, err)}
 		}
 	}
-	if v, ok := cu.mutation.Year(); ok {
-		if err := car.YearValidator(v); err != nil {
-			return &ValidationError{Name: "year", err: fmt.Errorf(`ent: validator failed for field "Car.year": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -465,11 +460,6 @@ func (cuo *CarUpdateOne) check() error {
 	if v, ok := cuo.mutation.Model(); ok {
 		if err := car.ModelValidator(v); err != nil {
 			return &ValidationError{Name: "model", err: fmt.Errorf(`ent: validator failed for field "Car.model": %w`, err)}
-		}
-	}
-	if v, ok := cuo.mutation.Year(); ok {
-		if err := car.YearValidator(v); err != nil {
-			return &ValidationError{Name: "year", err: fmt.Errorf(`ent: validator failed for field "Car.year": %w`, err)}
 		}
 	}
 	return nil

@@ -57,25 +57,6 @@ func (orc *OdometerRecordCreate) SetCar(c *Car) *OdometerRecordCreate {
 	return orc.SetCarID(c.ID)
 }
 
-// SetPrevID sets the "prev" edge to the OdometerRecord entity by ID.
-func (orc *OdometerRecordCreate) SetPrevID(id uuid.UUID) *OdometerRecordCreate {
-	orc.mutation.SetPrevID(id)
-	return orc
-}
-
-// SetNillablePrevID sets the "prev" edge to the OdometerRecord entity by ID if the given value is not nil.
-func (orc *OdometerRecordCreate) SetNillablePrevID(id *uuid.UUID) *OdometerRecordCreate {
-	if id != nil {
-		orc = orc.SetPrevID(*id)
-	}
-	return orc
-}
-
-// SetPrev sets the "prev" edge to the OdometerRecord entity.
-func (orc *OdometerRecordCreate) SetPrev(o *OdometerRecord) *OdometerRecordCreate {
-	return orc.SetPrevID(o.ID)
-}
-
 // SetNextID sets the "next" edge to the OdometerRecord entity by ID.
 func (orc *OdometerRecordCreate) SetNextID(id uuid.UUID) *OdometerRecordCreate {
 	orc.mutation.SetNextID(id)
@@ -93,6 +74,25 @@ func (orc *OdometerRecordCreate) SetNillableNextID(id *uuid.UUID) *OdometerRecor
 // SetNext sets the "next" edge to the OdometerRecord entity.
 func (orc *OdometerRecordCreate) SetNext(o *OdometerRecord) *OdometerRecordCreate {
 	return orc.SetNextID(o.ID)
+}
+
+// SetPrevID sets the "prev" edge to the OdometerRecord entity by ID.
+func (orc *OdometerRecordCreate) SetPrevID(id uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetPrevID(id)
+	return orc
+}
+
+// SetNillablePrevID sets the "prev" edge to the OdometerRecord entity by ID if the given value is not nil.
+func (orc *OdometerRecordCreate) SetNillablePrevID(id *uuid.UUID) *OdometerRecordCreate {
+	if id != nil {
+		orc = orc.SetPrevID(*id)
+	}
+	return orc
+}
+
+// SetPrev sets the "prev" edge to the OdometerRecord entity.
+func (orc *OdometerRecordCreate) SetPrev(o *OdometerRecord) *OdometerRecordCreate {
+	return orc.SetPrevID(o.ID)
 }
 
 // Mutation returns the OdometerRecordMutation object of the builder.
@@ -215,12 +215,12 @@ func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.Create
 		_node.car_odometer_records = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.PrevIDs(); len(nodes) > 0 {
+	if nodes := orc.mutation.NextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
-			Table:   odometerrecord.PrevTable,
-			Columns: []string{odometerrecord.PrevColumn},
+			Table:   odometerrecord.NextTable,
+			Columns: []string{odometerrecord.NextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
@@ -229,15 +229,15 @@ func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.odometer_record_next = &nodes[0]
+		_node.odometer_record_prev = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.NextIDs(); len(nodes) > 0 {
+	if nodes := orc.mutation.PrevIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   odometerrecord.NextTable,
-			Columns: []string{odometerrecord.NextColumn},
+			Table:   odometerrecord.PrevTable,
+			Columns: []string{odometerrecord.PrevColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),

@@ -26,6 +26,6 @@ func (FuelRecord) Fields() []ent.Field {
 func (FuelRecord) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("car", Car.Type).Ref("fuel_records").Unique().Required(),
-		edge.To("next", FuelRecord.Type).Unique().From("prev").Unique(),
+		edge.To("prev", FuelRecord.Type).Unique().From("next").Unique(),
 	}
 }

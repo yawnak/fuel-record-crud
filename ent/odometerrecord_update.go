@@ -85,25 +85,6 @@ func (oru *OdometerRecordUpdate) SetPrev(o *OdometerRecord) *OdometerRecordUpdat
 	return oru.SetPrevID(o.ID)
 }
 
-// SetNextID sets the "next" edge to the OdometerRecord entity by ID.
-func (oru *OdometerRecordUpdate) SetNextID(id uuid.UUID) *OdometerRecordUpdate {
-	oru.mutation.SetNextID(id)
-	return oru
-}
-
-// SetNillableNextID sets the "next" edge to the OdometerRecord entity by ID if the given value is not nil.
-func (oru *OdometerRecordUpdate) SetNillableNextID(id *uuid.UUID) *OdometerRecordUpdate {
-	if id != nil {
-		oru = oru.SetNextID(*id)
-	}
-	return oru
-}
-
-// SetNext sets the "next" edge to the OdometerRecord entity.
-func (oru *OdometerRecordUpdate) SetNext(o *OdometerRecord) *OdometerRecordUpdate {
-	return oru.SetNextID(o.ID)
-}
-
 // Mutation returns the OdometerRecordMutation object of the builder.
 func (oru *OdometerRecordUpdate) Mutation() *OdometerRecordMutation {
 	return oru.mutation
@@ -118,12 +99,6 @@ func (oru *OdometerRecordUpdate) ClearCar() *OdometerRecordUpdate {
 // ClearPrev clears the "prev" edge to the OdometerRecord entity.
 func (oru *OdometerRecordUpdate) ClearPrev() *OdometerRecordUpdate {
 	oru.mutation.ClearPrev()
-	return oru
-}
-
-// ClearNext clears the "next" edge to the OdometerRecord entity.
-func (oru *OdometerRecordUpdate) ClearNext() *OdometerRecordUpdate {
-	oru.mutation.ClearNext()
 	return oru
 }
 
@@ -228,7 +203,7 @@ func (oru *OdometerRecordUpdate) sqlSave(ctx context.Context) (n int, err error)
 	if oru.mutation.PrevCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   odometerrecord.PrevTable,
 			Columns: []string{odometerrecord.PrevColumn},
 			Bidi:    false,
@@ -241,38 +216,9 @@ func (oru *OdometerRecordUpdate) sqlSave(ctx context.Context) (n int, err error)
 	if nodes := oru.mutation.PrevIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   odometerrecord.PrevTable,
 			Columns: []string{odometerrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if oru.mutation.NextCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.NextTable,
-			Columns: []string{odometerrecord.NextColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oru.mutation.NextIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.NextTable,
-			Columns: []string{odometerrecord.NextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
@@ -359,25 +305,6 @@ func (oruo *OdometerRecordUpdateOne) SetPrev(o *OdometerRecord) *OdometerRecordU
 	return oruo.SetPrevID(o.ID)
 }
 
-// SetNextID sets the "next" edge to the OdometerRecord entity by ID.
-func (oruo *OdometerRecordUpdateOne) SetNextID(id uuid.UUID) *OdometerRecordUpdateOne {
-	oruo.mutation.SetNextID(id)
-	return oruo
-}
-
-// SetNillableNextID sets the "next" edge to the OdometerRecord entity by ID if the given value is not nil.
-func (oruo *OdometerRecordUpdateOne) SetNillableNextID(id *uuid.UUID) *OdometerRecordUpdateOne {
-	if id != nil {
-		oruo = oruo.SetNextID(*id)
-	}
-	return oruo
-}
-
-// SetNext sets the "next" edge to the OdometerRecord entity.
-func (oruo *OdometerRecordUpdateOne) SetNext(o *OdometerRecord) *OdometerRecordUpdateOne {
-	return oruo.SetNextID(o.ID)
-}
-
 // Mutation returns the OdometerRecordMutation object of the builder.
 func (oruo *OdometerRecordUpdateOne) Mutation() *OdometerRecordMutation {
 	return oruo.mutation
@@ -392,12 +319,6 @@ func (oruo *OdometerRecordUpdateOne) ClearCar() *OdometerRecordUpdateOne {
 // ClearPrev clears the "prev" edge to the OdometerRecord entity.
 func (oruo *OdometerRecordUpdateOne) ClearPrev() *OdometerRecordUpdateOne {
 	oruo.mutation.ClearPrev()
-	return oruo
-}
-
-// ClearNext clears the "next" edge to the OdometerRecord entity.
-func (oruo *OdometerRecordUpdateOne) ClearNext() *OdometerRecordUpdateOne {
-	oruo.mutation.ClearNext()
 	return oruo
 }
 
@@ -532,7 +453,7 @@ func (oruo *OdometerRecordUpdateOne) sqlSave(ctx context.Context) (_node *Odomet
 	if oruo.mutation.PrevCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   odometerrecord.PrevTable,
 			Columns: []string{odometerrecord.PrevColumn},
 			Bidi:    false,
@@ -545,38 +466,9 @@ func (oruo *OdometerRecordUpdateOne) sqlSave(ctx context.Context) (_node *Odomet
 	if nodes := oruo.mutation.PrevIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   odometerrecord.PrevTable,
 			Columns: []string{odometerrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if oruo.mutation.NextCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.NextTable,
-			Columns: []string{odometerrecord.NextColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oruo.mutation.NextIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.NextTable,
-			Columns: []string{odometerrecord.NextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
