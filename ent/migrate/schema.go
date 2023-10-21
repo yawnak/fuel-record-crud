@@ -57,7 +57,7 @@ var (
 		{Name: "difference", Type: field.TypeFloat64},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "car_odometer_records", Type: field.TypeUUID},
-		{Name: "odometer_record_prev", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "odometer_record_next", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// OdometerRecordsTable holds the schema information for the "odometer_records" table.
 	OdometerRecordsTable = &schema.Table{
@@ -72,7 +72,7 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "odometer_records_odometer_records_prev",
+				Symbol:     "odometer_records_odometer_records_next",
 				Columns:    []*schema.Column{OdometerRecordsColumns[5]},
 				RefColumns: []*schema.Column{OdometerRecordsColumns[0]},
 				OnDelete:   schema.SetNull,

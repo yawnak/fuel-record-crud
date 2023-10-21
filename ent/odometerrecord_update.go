@@ -29,32 +29,6 @@ func (oru *OdometerRecordUpdate) Where(ps ...predicate.OdometerRecord) *Odometer
 	return oru
 }
 
-// SetCurrentFuelLiters sets the "current_fuel_liters" field.
-func (oru *OdometerRecordUpdate) SetCurrentFuelLiters(f float64) *OdometerRecordUpdate {
-	oru.mutation.ResetCurrentFuelLiters()
-	oru.mutation.SetCurrentFuelLiters(f)
-	return oru
-}
-
-// AddCurrentFuelLiters adds f to the "current_fuel_liters" field.
-func (oru *OdometerRecordUpdate) AddCurrentFuelLiters(f float64) *OdometerRecordUpdate {
-	oru.mutation.AddCurrentFuelLiters(f)
-	return oru
-}
-
-// SetDifference sets the "difference" field.
-func (oru *OdometerRecordUpdate) SetDifference(f float64) *OdometerRecordUpdate {
-	oru.mutation.ResetDifference()
-	oru.mutation.SetDifference(f)
-	return oru
-}
-
-// AddDifference adds f to the "difference" field.
-func (oru *OdometerRecordUpdate) AddDifference(f float64) *OdometerRecordUpdate {
-	oru.mutation.AddDifference(f)
-	return oru
-}
-
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (oru *OdometerRecordUpdate) SetCarID(id uuid.UUID) *OdometerRecordUpdate {
 	oru.mutation.SetCarID(id)
@@ -66,25 +40,6 @@ func (oru *OdometerRecordUpdate) SetCar(c *Car) *OdometerRecordUpdate {
 	return oru.SetCarID(c.ID)
 }
 
-// SetPrevID sets the "prev" edge to the OdometerRecord entity by ID.
-func (oru *OdometerRecordUpdate) SetPrevID(id uuid.UUID) *OdometerRecordUpdate {
-	oru.mutation.SetPrevID(id)
-	return oru
-}
-
-// SetNillablePrevID sets the "prev" edge to the OdometerRecord entity by ID if the given value is not nil.
-func (oru *OdometerRecordUpdate) SetNillablePrevID(id *uuid.UUID) *OdometerRecordUpdate {
-	if id != nil {
-		oru = oru.SetPrevID(*id)
-	}
-	return oru
-}
-
-// SetPrev sets the "prev" edge to the OdometerRecord entity.
-func (oru *OdometerRecordUpdate) SetPrev(o *OdometerRecord) *OdometerRecordUpdate {
-	return oru.SetPrevID(o.ID)
-}
-
 // Mutation returns the OdometerRecordMutation object of the builder.
 func (oru *OdometerRecordUpdate) Mutation() *OdometerRecordMutation {
 	return oru.mutation
@@ -93,12 +48,6 @@ func (oru *OdometerRecordUpdate) Mutation() *OdometerRecordMutation {
 // ClearCar clears the "car" edge to the Car entity.
 func (oru *OdometerRecordUpdate) ClearCar() *OdometerRecordUpdate {
 	oru.mutation.ClearCar()
-	return oru
-}
-
-// ClearPrev clears the "prev" edge to the OdometerRecord entity.
-func (oru *OdometerRecordUpdate) ClearPrev() *OdometerRecordUpdate {
-	oru.mutation.ClearPrev()
 	return oru
 }
 
@@ -131,16 +80,6 @@ func (oru *OdometerRecordUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oru *OdometerRecordUpdate) check() error {
-	if v, ok := oru.mutation.CurrentFuelLiters(); ok {
-		if err := odometerrecord.CurrentFuelLitersValidator(v); err != nil {
-			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.current_fuel_liters": %w`, err)}
-		}
-	}
-	if v, ok := oru.mutation.Difference(); ok {
-		if err := odometerrecord.DifferenceValidator(v); err != nil {
-			return &ValidationError{Name: "difference", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.difference": %w`, err)}
-		}
-	}
 	if _, ok := oru.mutation.CarID(); oru.mutation.CarCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "OdometerRecord.car"`)
 	}
@@ -158,18 +97,6 @@ func (oru *OdometerRecordUpdate) sqlSave(ctx context.Context) (n int, err error)
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := oru.mutation.CurrentFuelLiters(); ok {
-		_spec.SetField(odometerrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := oru.mutation.AddedCurrentFuelLiters(); ok {
-		_spec.AddField(odometerrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := oru.mutation.Difference(); ok {
-		_spec.SetField(odometerrecord.FieldDifference, field.TypeFloat64, value)
-	}
-	if value, ok := oru.mutation.AddedDifference(); ok {
-		_spec.AddField(odometerrecord.FieldDifference, field.TypeFloat64, value)
 	}
 	if oru.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -200,35 +127,6 @@ func (oru *OdometerRecordUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.PrevCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.PrevTable,
-			Columns: []string{odometerrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oru.mutation.PrevIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.PrevTable,
-			Columns: []string{odometerrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, oru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{odometerrecord.Label}
@@ -249,32 +147,6 @@ type OdometerRecordUpdateOne struct {
 	mutation *OdometerRecordMutation
 }
 
-// SetCurrentFuelLiters sets the "current_fuel_liters" field.
-func (oruo *OdometerRecordUpdateOne) SetCurrentFuelLiters(f float64) *OdometerRecordUpdateOne {
-	oruo.mutation.ResetCurrentFuelLiters()
-	oruo.mutation.SetCurrentFuelLiters(f)
-	return oruo
-}
-
-// AddCurrentFuelLiters adds f to the "current_fuel_liters" field.
-func (oruo *OdometerRecordUpdateOne) AddCurrentFuelLiters(f float64) *OdometerRecordUpdateOne {
-	oruo.mutation.AddCurrentFuelLiters(f)
-	return oruo
-}
-
-// SetDifference sets the "difference" field.
-func (oruo *OdometerRecordUpdateOne) SetDifference(f float64) *OdometerRecordUpdateOne {
-	oruo.mutation.ResetDifference()
-	oruo.mutation.SetDifference(f)
-	return oruo
-}
-
-// AddDifference adds f to the "difference" field.
-func (oruo *OdometerRecordUpdateOne) AddDifference(f float64) *OdometerRecordUpdateOne {
-	oruo.mutation.AddDifference(f)
-	return oruo
-}
-
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (oruo *OdometerRecordUpdateOne) SetCarID(id uuid.UUID) *OdometerRecordUpdateOne {
 	oruo.mutation.SetCarID(id)
@@ -286,25 +158,6 @@ func (oruo *OdometerRecordUpdateOne) SetCar(c *Car) *OdometerRecordUpdateOne {
 	return oruo.SetCarID(c.ID)
 }
 
-// SetPrevID sets the "prev" edge to the OdometerRecord entity by ID.
-func (oruo *OdometerRecordUpdateOne) SetPrevID(id uuid.UUID) *OdometerRecordUpdateOne {
-	oruo.mutation.SetPrevID(id)
-	return oruo
-}
-
-// SetNillablePrevID sets the "prev" edge to the OdometerRecord entity by ID if the given value is not nil.
-func (oruo *OdometerRecordUpdateOne) SetNillablePrevID(id *uuid.UUID) *OdometerRecordUpdateOne {
-	if id != nil {
-		oruo = oruo.SetPrevID(*id)
-	}
-	return oruo
-}
-
-// SetPrev sets the "prev" edge to the OdometerRecord entity.
-func (oruo *OdometerRecordUpdateOne) SetPrev(o *OdometerRecord) *OdometerRecordUpdateOne {
-	return oruo.SetPrevID(o.ID)
-}
-
 // Mutation returns the OdometerRecordMutation object of the builder.
 func (oruo *OdometerRecordUpdateOne) Mutation() *OdometerRecordMutation {
 	return oruo.mutation
@@ -313,12 +166,6 @@ func (oruo *OdometerRecordUpdateOne) Mutation() *OdometerRecordMutation {
 // ClearCar clears the "car" edge to the Car entity.
 func (oruo *OdometerRecordUpdateOne) ClearCar() *OdometerRecordUpdateOne {
 	oruo.mutation.ClearCar()
-	return oruo
-}
-
-// ClearPrev clears the "prev" edge to the OdometerRecord entity.
-func (oruo *OdometerRecordUpdateOne) ClearPrev() *OdometerRecordUpdateOne {
-	oruo.mutation.ClearPrev()
 	return oruo
 }
 
@@ -364,16 +211,6 @@ func (oruo *OdometerRecordUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oruo *OdometerRecordUpdateOne) check() error {
-	if v, ok := oruo.mutation.CurrentFuelLiters(); ok {
-		if err := odometerrecord.CurrentFuelLitersValidator(v); err != nil {
-			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.current_fuel_liters": %w`, err)}
-		}
-	}
-	if v, ok := oruo.mutation.Difference(); ok {
-		if err := odometerrecord.DifferenceValidator(v); err != nil {
-			return &ValidationError{Name: "difference", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.difference": %w`, err)}
-		}
-	}
 	if _, ok := oruo.mutation.CarID(); oruo.mutation.CarCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "OdometerRecord.car"`)
 	}
@@ -409,18 +246,6 @@ func (oruo *OdometerRecordUpdateOne) sqlSave(ctx context.Context) (_node *Odomet
 			}
 		}
 	}
-	if value, ok := oruo.mutation.CurrentFuelLiters(); ok {
-		_spec.SetField(odometerrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := oruo.mutation.AddedCurrentFuelLiters(); ok {
-		_spec.AddField(odometerrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := oruo.mutation.Difference(); ok {
-		_spec.SetField(odometerrecord.FieldDifference, field.TypeFloat64, value)
-	}
-	if value, ok := oruo.mutation.AddedDifference(); ok {
-		_spec.AddField(odometerrecord.FieldDifference, field.TypeFloat64, value)
-	}
 	if oruo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -443,35 +268,6 @@ func (oruo *OdometerRecordUpdateOne) sqlSave(ctx context.Context) (_node *Odomet
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if oruo.mutation.PrevCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.PrevTable,
-			Columns: []string{odometerrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oruo.mutation.PrevIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   odometerrecord.PrevTable,
-			Columns: []string{odometerrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(odometerrecord.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

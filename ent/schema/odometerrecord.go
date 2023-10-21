@@ -16,8 +16,8 @@ type OdometerRecord struct {
 func (OdometerRecord) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StorageKey("odometer_record_id").Immutable(),
-		field.Float("current_fuel_liters").Positive(),
-		field.Float("difference").Positive(),
+		field.Float("current_fuel_liters").Positive().Immutable(),
+		field.Float("difference").Positive().Immutable(),
 		field.Time("created_at").Immutable(),
 	}
 }
@@ -26,6 +26,7 @@ func (OdometerRecord) Fields() []ent.Field {
 func (OdometerRecord) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("car", Car.Type).Ref("odometer_records").Unique().Required(),
-		edge.To("prev", OdometerRecord.Type).Unique().From("next").Unique().Immutable(),
+		edge.To("next", OdometerRecord.Type).Unique().Immutable().
+			From("prev").Unique().Immutable(),
 	}
 }

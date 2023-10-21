@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/yawnak/fuel-record-crud/ent"
-	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 )
 
 func Open(databaseUrl string) *ent.Client {
@@ -62,15 +61,17 @@ func TestCRUD(t *testing.T) {
 	if firstFuel, err = client.FuelRecord.Create().SetID(fuelUUID).SetCarID(carUUID).SetCurrentFuelLiters(10).SetDifference(10).SetCreatedAt(time.Now()).Save(ctx); err != nil {
 		log.Fatal(err)
 	}
-	if secondFuel, err = client.FuelRecord.Create().SetID(nextFuelUUID).SetCarID(carUUID).SetCurrentFuelLiters(20).SetDifference(10).SetCreatedAt(time.Now()).SetPrevID(fuelUUID).Save(ctx); err != nil {
+	if secondFuel, err = client.FuelRecord.Create().SetID(nextFuelUUID).SetCarID(carUUID).SetCurrentFuelLiters(20).SetDifference(10).SetCreatedAt(time.Now()).
+		SetNextID(fuelUUID).Save(ctx); err != nil {
 		log.Fatal(err)
 	}
 
 	client.OdometerRecord.Create().SetID(odometerUUID).SetCarID(carUUID).SetCurrentFuelLiters(100).SetDifference(100).SetCreatedAt(time.Now()).SaveX(ctx)
 	client.OdometerRecord.Create().SetID(nextOdometerUUID).SetCarID(carUUID).SetCurrentFuelLiters(200).SetDifference(100).SetCreatedAt(time.Now()).SetPrevID(odometerUUID).SaveX(ctx)
 
+
 	fmt.Println(client.FuelRecord.QueryNext(firstFuel).All(ctx))
 	fmt.Println(client.FuelRecord.QueryPrev(secondFuel).All(ctx))
 
-	fmt.Println(client.Car.QueryFuelRecords(res).Order(fuelrecord.ByCreatedAt(entsql.OrderDesc())))
+	//fmt.Println(client.Car.QueryFuelRecords(res).Order(fuelrecord.ByCreatedAt(entsql.OrderDesc())))
 }
