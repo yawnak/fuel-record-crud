@@ -10,8 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
-	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
@@ -29,26 +27,9 @@ func (oru *OdometerRecordUpdate) Where(ps ...predicate.OdometerRecord) *Odometer
 	return oru
 }
 
-// SetCarID sets the "car" edge to the Car entity by ID.
-func (oru *OdometerRecordUpdate) SetCarID(id uuid.UUID) *OdometerRecordUpdate {
-	oru.mutation.SetCarID(id)
-	return oru
-}
-
-// SetCar sets the "car" edge to the Car entity.
-func (oru *OdometerRecordUpdate) SetCar(c *Car) *OdometerRecordUpdate {
-	return oru.SetCarID(c.ID)
-}
-
 // Mutation returns the OdometerRecordMutation object of the builder.
 func (oru *OdometerRecordUpdate) Mutation() *OdometerRecordMutation {
 	return oru.mutation
-}
-
-// ClearCar clears the "car" edge to the Car entity.
-func (oru *OdometerRecordUpdate) ClearCar() *OdometerRecordUpdate {
-	oru.mutation.ClearCar()
-	return oru
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -98,35 +79,6 @@ func (oru *OdometerRecordUpdate) sqlSave(ctx context.Context) (n int, err error)
 			}
 		}
 	}
-	if oru.mutation.CarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   odometerrecord.CarTable,
-			Columns: []string{odometerrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oru.mutation.CarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   odometerrecord.CarTable,
-			Columns: []string{odometerrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, oru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{odometerrecord.Label}
@@ -147,26 +99,9 @@ type OdometerRecordUpdateOne struct {
 	mutation *OdometerRecordMutation
 }
 
-// SetCarID sets the "car" edge to the Car entity by ID.
-func (oruo *OdometerRecordUpdateOne) SetCarID(id uuid.UUID) *OdometerRecordUpdateOne {
-	oruo.mutation.SetCarID(id)
-	return oruo
-}
-
-// SetCar sets the "car" edge to the Car entity.
-func (oruo *OdometerRecordUpdateOne) SetCar(c *Car) *OdometerRecordUpdateOne {
-	return oruo.SetCarID(c.ID)
-}
-
 // Mutation returns the OdometerRecordMutation object of the builder.
 func (oruo *OdometerRecordUpdateOne) Mutation() *OdometerRecordMutation {
 	return oruo.mutation
-}
-
-// ClearCar clears the "car" edge to the Car entity.
-func (oruo *OdometerRecordUpdateOne) ClearCar() *OdometerRecordUpdateOne {
-	oruo.mutation.ClearCar()
-	return oruo
 }
 
 // Where appends a list predicates to the OdometerRecordUpdate builder.
@@ -245,35 +180,6 @@ func (oruo *OdometerRecordUpdateOne) sqlSave(ctx context.Context) (_node *Odomet
 				ps[i](selector)
 			}
 		}
-	}
-	if oruo.mutation.CarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   odometerrecord.CarTable,
-			Columns: []string{odometerrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oruo.mutation.CarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   odometerrecord.CarTable,
-			Columns: []string{odometerrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &OdometerRecord{config: oruo.config}
 	_spec.Assign = _node.assignValues

@@ -1770,27 +1770,100 @@ func (m *OdometerRecordMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetCarID sets the "car" edge to the Car entity by id.
-func (m *OdometerRecordMutation) SetCarID(id uuid.UUID) {
-	m.car = &id
+// SetCarID sets the "car_id" field.
+func (m *OdometerRecordMutation) SetCarID(u uuid.UUID) {
+	m.car = &u
+}
+
+// CarID returns the value of the "car_id" field in the mutation.
+func (m *OdometerRecordMutation) CarID() (r uuid.UUID, exists bool) {
+	v := m.car
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarID returns the old "car_id" field's value of the OdometerRecord entity.
+// If the OdometerRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OdometerRecordMutation) OldCarID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarID: %w", err)
+	}
+	return oldValue.CarID, nil
+}
+
+// ResetCarID resets all changes to the "car_id" field.
+func (m *OdometerRecordMutation) ResetCarID() {
+	m.car = nil
+}
+
+// SetNextOdometerRecordID sets the "next_odometer_record_id" field.
+func (m *OdometerRecordMutation) SetNextOdometerRecordID(u uuid.UUID) {
+	m.prev = &u
+}
+
+// NextOdometerRecordID returns the value of the "next_odometer_record_id" field in the mutation.
+func (m *OdometerRecordMutation) NextOdometerRecordID() (r uuid.UUID, exists bool) {
+	v := m.prev
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNextOdometerRecordID returns the old "next_odometer_record_id" field's value of the OdometerRecord entity.
+// If the OdometerRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OdometerRecordMutation) OldNextOdometerRecordID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNextOdometerRecordID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNextOdometerRecordID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNextOdometerRecordID: %w", err)
+	}
+	return oldValue.NextOdometerRecordID, nil
+}
+
+// ClearNextOdometerRecordID clears the value of the "next_odometer_record_id" field.
+func (m *OdometerRecordMutation) ClearNextOdometerRecordID() {
+	m.prev = nil
+	m.clearedFields[odometerrecord.FieldNextOdometerRecordID] = struct{}{}
+}
+
+// NextOdometerRecordIDCleared returns if the "next_odometer_record_id" field was cleared in this mutation.
+func (m *OdometerRecordMutation) NextOdometerRecordIDCleared() bool {
+	_, ok := m.clearedFields[odometerrecord.FieldNextOdometerRecordID]
+	return ok
+}
+
+// ResetNextOdometerRecordID resets all changes to the "next_odometer_record_id" field.
+func (m *OdometerRecordMutation) ResetNextOdometerRecordID() {
+	m.prev = nil
+	delete(m.clearedFields, odometerrecord.FieldNextOdometerRecordID)
 }
 
 // ClearCar clears the "car" edge to the Car entity.
 func (m *OdometerRecordMutation) ClearCar() {
 	m.clearedcar = true
+	m.clearedFields[odometerrecord.FieldCarID] = struct{}{}
 }
 
 // CarCleared reports if the "car" edge to the Car entity was cleared.
 func (m *OdometerRecordMutation) CarCleared() bool {
 	return m.clearedcar
-}
-
-// CarID returns the "car" edge ID in the mutation.
-func (m *OdometerRecordMutation) CarID() (id uuid.UUID, exists bool) {
-	if m.car != nil {
-		return *m.car, true
-	}
-	return
 }
 
 // CarIDs returns the "car" edge IDs in the mutation.
@@ -1817,11 +1890,12 @@ func (m *OdometerRecordMutation) SetPrevID(id uuid.UUID) {
 // ClearPrev clears the "prev" edge to the OdometerRecord entity.
 func (m *OdometerRecordMutation) ClearPrev() {
 	m.clearedprev = true
+	m.clearedFields[odometerrecord.FieldNextOdometerRecordID] = struct{}{}
 }
 
 // PrevCleared reports if the "prev" edge to the OdometerRecord entity was cleared.
 func (m *OdometerRecordMutation) PrevCleared() bool {
-	return m.clearedprev
+	return m.NextOdometerRecordIDCleared() || m.clearedprev
 }
 
 // PrevID returns the "prev" edge ID in the mutation.
@@ -1921,7 +1995,7 @@ func (m *OdometerRecordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OdometerRecordMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.current_fuel_liters != nil {
 		fields = append(fields, odometerrecord.FieldCurrentFuelLiters)
 	}
@@ -1930,6 +2004,12 @@ func (m *OdometerRecordMutation) Fields() []string {
 	}
 	if m.created_at != nil {
 		fields = append(fields, odometerrecord.FieldCreatedAt)
+	}
+	if m.car != nil {
+		fields = append(fields, odometerrecord.FieldCarID)
+	}
+	if m.prev != nil {
+		fields = append(fields, odometerrecord.FieldNextOdometerRecordID)
 	}
 	return fields
 }
@@ -1945,6 +2025,10 @@ func (m *OdometerRecordMutation) Field(name string) (ent.Value, bool) {
 		return m.Difference()
 	case odometerrecord.FieldCreatedAt:
 		return m.CreatedAt()
+	case odometerrecord.FieldCarID:
+		return m.CarID()
+	case odometerrecord.FieldNextOdometerRecordID:
+		return m.NextOdometerRecordID()
 	}
 	return nil, false
 }
@@ -1960,6 +2044,10 @@ func (m *OdometerRecordMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldDifference(ctx)
 	case odometerrecord.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case odometerrecord.FieldCarID:
+		return m.OldCarID(ctx)
+	case odometerrecord.FieldNextOdometerRecordID:
+		return m.OldNextOdometerRecordID(ctx)
 	}
 	return nil, fmt.Errorf("unknown OdometerRecord field %s", name)
 }
@@ -1989,6 +2077,20 @@ func (m *OdometerRecordMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case odometerrecord.FieldCarID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarID(v)
+		return nil
+	case odometerrecord.FieldNextOdometerRecordID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNextOdometerRecordID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown OdometerRecord field %s", name)
@@ -2046,7 +2148,11 @@ func (m *OdometerRecordMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *OdometerRecordMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(odometerrecord.FieldNextOdometerRecordID) {
+		fields = append(fields, odometerrecord.FieldNextOdometerRecordID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2059,6 +2165,11 @@ func (m *OdometerRecordMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *OdometerRecordMutation) ClearField(name string) error {
+	switch name {
+	case odometerrecord.FieldNextOdometerRecordID:
+		m.ClearNextOdometerRecordID()
+		return nil
+	}
 	return fmt.Errorf("unknown OdometerRecord nullable field %s", name)
 }
 
@@ -2074,6 +2185,12 @@ func (m *OdometerRecordMutation) ResetField(name string) error {
 		return nil
 	case odometerrecord.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case odometerrecord.FieldCarID:
+		m.ResetCarID()
+		return nil
+	case odometerrecord.FieldNextOdometerRecordID:
+		m.ResetNextOdometerRecordID()
 		return nil
 	}
 	return fmt.Errorf("unknown OdometerRecord field %s", name)

@@ -71,6 +71,16 @@ func CreatedAt(v time.Time) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// CarID applies equality check predicate on the "car_id" field. It's identical to CarIDEQ.
+func CarID(v uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCarID, v))
+}
+
+// NextOdometerRecordID applies equality check predicate on the "next_odometer_record_id" field. It's identical to NextOdometerRecordIDEQ.
+func NextOdometerRecordID(v uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldNextOdometerRecordID, v))
+}
+
 // CurrentFuelLitersEQ applies the EQ predicate on the "current_fuel_liters" field.
 func CurrentFuelLitersEQ(v float64) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentFuelLiters, v))
@@ -189,6 +199,56 @@ func CreatedAtLT(v time.Time) predicate.OdometerRecord {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// CarIDEQ applies the EQ predicate on the "car_id" field.
+func CarIDEQ(v uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCarID, v))
+}
+
+// CarIDNEQ applies the NEQ predicate on the "car_id" field.
+func CarIDNEQ(v uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNEQ(FieldCarID, v))
+}
+
+// CarIDIn applies the In predicate on the "car_id" field.
+func CarIDIn(vs ...uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIn(FieldCarID, vs...))
+}
+
+// CarIDNotIn applies the NotIn predicate on the "car_id" field.
+func CarIDNotIn(vs ...uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotIn(FieldCarID, vs...))
+}
+
+// NextOdometerRecordIDEQ applies the EQ predicate on the "next_odometer_record_id" field.
+func NextOdometerRecordIDEQ(v uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldNextOdometerRecordID, v))
+}
+
+// NextOdometerRecordIDNEQ applies the NEQ predicate on the "next_odometer_record_id" field.
+func NextOdometerRecordIDNEQ(v uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNEQ(FieldNextOdometerRecordID, v))
+}
+
+// NextOdometerRecordIDIn applies the In predicate on the "next_odometer_record_id" field.
+func NextOdometerRecordIDIn(vs ...uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIn(FieldNextOdometerRecordID, vs...))
+}
+
+// NextOdometerRecordIDNotIn applies the NotIn predicate on the "next_odometer_record_id" field.
+func NextOdometerRecordIDNotIn(vs ...uuid.UUID) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotIn(FieldNextOdometerRecordID, vs...))
+}
+
+// NextOdometerRecordIDIsNil applies the IsNil predicate on the "next_odometer_record_id" field.
+func NextOdometerRecordIDIsNil() predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIsNull(FieldNextOdometerRecordID))
+}
+
+// NextOdometerRecordIDNotNil applies the NotNil predicate on the "next_odometer_record_id" field.
+func NextOdometerRecordIDNotNil() predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotNull(FieldNextOdometerRecordID))
 }
 
 // HasCar applies the HasEdge predicate on the "car" edge.

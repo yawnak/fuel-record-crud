@@ -27,7 +27,6 @@ type OdometerRecordQuery struct {
 	withCar    *CarQuery
 	withPrev   *OdometerRecordQuery
 	withNext   *OdometerRecordQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -441,7 +440,6 @@ func (orq *OdometerRecordQuery) prepareQuery(ctx context.Context) error {
 func (orq *OdometerRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OdometerRecord, error) {
 	var (
 		nodes       = []*OdometerRecord{}
-		withFKs     = orq.withFKs
 		_spec       = orq.querySpec()
 		loadedTypes = [3]bool{
 			orq.withCar != nil,
@@ -449,12 +447,6 @@ func (orq *OdometerRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			orq.withNext != nil,
 		}
 	)
-	if orq.withCar != nil || orq.withPrev != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, odometerrecord.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OdometerRecord).scanValues(nil, columns)
 	}
@@ -498,10 +490,7 @@ func (orq *OdometerRecordQuery) loadCar(ctx context.Context, query *CarQuery, no
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OdometerRecord)
 	for i := range nodes {
-		if nodes[i].car_odometer_records == nil {
-			continue
-		}
-		fk := *nodes[i].car_odometer_records
+		fk := nodes[i].CarID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -518,7 +507,7 @@ func (orq *OdometerRecordQuery) loadCar(ctx context.Context, query *CarQuery, no
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "car_odometer_records" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "car_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -530,10 +519,7 @@ func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRec
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OdometerRecord)
 	for i := range nodes {
-		if nodes[i].odometer_record_next == nil {
-			continue
-		}
-		fk := *nodes[i].odometer_record_next
+		fk := nodes[i].NextOdometerRecordID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -550,7 +536,7 @@ func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRec
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "odometer_record_next" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "next_odometer_record_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -565,7 +551,9 @@ func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRec
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(odometerrecord.FieldNextOdometerRecordID)
+	}
 	query.Where(predicate.OdometerRecord(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(odometerrecord.NextColumn), fks...))
 	}))
@@ -574,13 +562,10 @@ func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRec
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.odometer_record_next
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "odometer_record_next" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.NextOdometerRecordID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "odometer_record_next" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "next_odometer_record_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -611,6 +596,12 @@ func (orq *OdometerRecordQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != odometerrecord.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if orq.withCar != nil {
+			_spec.Node.AddColumnOnce(odometerrecord.FieldCarID)
+		}
+		if orq.withPrev != nil {
+			_spec.Node.AddColumnOnce(odometerrecord.FieldNextOdometerRecordID)
 		}
 	}
 	if ps := orq.predicates; len(ps) > 0 {

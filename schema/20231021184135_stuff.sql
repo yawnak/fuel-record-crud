@@ -1,0 +1,4 @@
+-- Modify "odometer_records" table
+ALTER TABLE "odometer_records" DROP CONSTRAINT "odometer_records_cars_odometer_records", DROP CONSTRAINT "odometer_records_odometer_records_next", DROP COLUMN "car_odometer_records", DROP COLUMN "odometer_record_next", ADD COLUMN "car_id" uuid NOT NULL, ADD COLUMN "next_odometer_record_id" uuid NULL, ADD CONSTRAINT "odometer_records_cars_odometer_records" FOREIGN KEY ("car_id") REFERENCES "cars" ("car_id") ON UPDATE NO ACTION ON DELETE NO ACTION, ADD CONSTRAINT "odometer_records_odometer_records_next" FOREIGN KEY ("next_odometer_record_id") REFERENCES "odometer_records" ("odometer_record_id") ON UPDATE NO ACTION ON DELETE SET NULL;
+-- Create index "odometer_records_next_odometer_record_id_key" to table: "odometer_records"
+CREATE UNIQUE INDEX "odometer_records_next_odometer_record_id_key" ON "odometer_records" ("next_odometer_record_id");

@@ -41,7 +41,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "odometerrecord" package.
 	OdometerRecordsInverseTable = "odometer_records"
 	// OdometerRecordsColumn is the table column denoting the odometer_records relation/edge.
-	OdometerRecordsColumn = "car_odometer_records"
+	OdometerRecordsColumn = "car_id"
 )
 
 // Columns holds all SQL columns for car fields.

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/yawnak/fuel-record-crud/ent"
+	_ "github.com/yawnak/fuel-record-crud/ent/runtime"
 )
 
 func Open(databaseUrl string) *ent.Client {
@@ -71,6 +72,5 @@ func TestCRUD(t *testing.T) {
 
 	fmt.Println(client.FuelRecord.QueryNext(firstFuel).All(ctx))
 	fmt.Println(client.FuelRecord.QueryPrev(secondFuel).All(ctx))
-
 	//fmt.Println(client.Car.QueryFuelRecords(res).Order(fuelrecord.ByCreatedAt(entsql.OrderDesc())))
 }

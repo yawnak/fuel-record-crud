@@ -56,8 +56,8 @@ var (
 		{Name: "current_fuel_liters", Type: field.TypeFloat64},
 		{Name: "difference", Type: field.TypeFloat64},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "car_odometer_records", Type: field.TypeUUID},
-		{Name: "odometer_record_next", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "car_id", Type: field.TypeUUID},
+		{Name: "next_odometer_record_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// OdometerRecordsTable holds the schema information for the "odometer_records" table.
 	OdometerRecordsTable = &schema.Table{

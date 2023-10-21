@@ -18,6 +18,10 @@ const (
 	FieldDifference = "difference"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldCarID holds the string denoting the car_id field in the database.
+	FieldCarID = "car_id"
+	// FieldNextOdometerRecordID holds the string denoting the next_odometer_record_id field in the database.
+	FieldNextOdometerRecordID = "next_odometer_record_id"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
 	// EdgePrev holds the string denoting the prev edge name in mutations.
@@ -34,15 +38,15 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "car" package.
 	CarInverseTable = "cars"
 	// CarColumn is the table column denoting the car relation/edge.
-	CarColumn = "car_odometer_records"
+	CarColumn = "car_id"
 	// PrevTable is the table that holds the prev relation/edge.
 	PrevTable = "odometer_records"
 	// PrevColumn is the table column denoting the prev relation/edge.
-	PrevColumn = "odometer_record_next"
+	PrevColumn = "next_odometer_record_id"
 	// NextTable is the table that holds the next relation/edge.
 	NextTable = "odometer_records"
 	// NextColumn is the table column denoting the next relation/edge.
-	NextColumn = "odometer_record_next"
+	NextColumn = "next_odometer_record_id"
 )
 
 // Columns holds all SQL columns for odometerrecord fields.
@@ -51,24 +55,14 @@ var Columns = []string{
 	FieldCurrentFuelLiters,
 	FieldDifference,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "odometer_records"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"car_odometer_records",
-	"odometer_record_next",
+	FieldCarID,
+	FieldNextOdometerRecordID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -103,6 +97,16 @@ func ByDifference(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByCarID orders the results by the car_id field.
+func ByCarID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarID, opts...).ToFunc()
+}
+
+// ByNextOdometerRecordID orders the results by the next_odometer_record_id field.
+func ByNextOdometerRecordID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNextOdometerRecordID, opts...).ToFunc()
 }
 
 // ByCarField orders the results by car field.

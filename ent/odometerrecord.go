@@ -25,12 +25,14 @@ type OdometerRecord struct {
 	Difference float64 `json:"difference,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// CarID holds the value of the "car_id" field.
+	CarID uuid.UUID `json:"car_id,omitempty"`
+	// NextOdometerRecordID holds the value of the "next_odometer_record_id" field.
+	NextOdometerRecordID uuid.UUID `json:"next_odometer_record_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OdometerRecordQuery when eager-loading is set.
-	Edges                OdometerRecordEdges `json:"edges"`
-	car_odometer_records *uuid.UUID
-	odometer_record_next *uuid.UUID
-	selectValues         sql.SelectValues
+	Edges        OdometerRecordEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // OdometerRecordEdges holds the relations/edges for other nodes in the graph.
@@ -94,12 +96,8 @@ func (*OdometerRecord) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case odometerrecord.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case odometerrecord.FieldID:
+		case odometerrecord.FieldID, odometerrecord.FieldCarID, odometerrecord.FieldNextOdometerRecordID:
 			values[i] = new(uuid.UUID)
-		case odometerrecord.ForeignKeys[0]: // car_odometer_records
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case odometerrecord.ForeignKeys[1]: // odometer_record_next
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -139,19 +137,17 @@ func (or *OdometerRecord) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				or.CreatedAt = value.Time
 			}
-		case odometerrecord.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field car_odometer_records", values[i])
-			} else if value.Valid {
-				or.car_odometer_records = new(uuid.UUID)
-				*or.car_odometer_records = *value.S.(*uuid.UUID)
+		case odometerrecord.FieldCarID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field car_id", values[i])
+			} else if value != nil {
+				or.CarID = *value
 			}
-		case odometerrecord.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field odometer_record_next", values[i])
-			} else if value.Valid {
-				or.odometer_record_next = new(uuid.UUID)
-				*or.odometer_record_next = *value.S.(*uuid.UUID)
+		case odometerrecord.FieldNextOdometerRecordID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field next_odometer_record_id", values[i])
+			} else if value != nil {
+				or.NextOdometerRecordID = *value
 			}
 		default:
 			or.selectValues.Set(columns[i], values[i])
@@ -212,6 +208,12 @@ func (or *OdometerRecord) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(or.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("car_id=")
+	builder.WriteString(fmt.Sprintf("%v", or.CarID))
+	builder.WriteString(", ")
+	builder.WriteString("next_odometer_record_id=")
+	builder.WriteString(fmt.Sprintf("%v", or.NextOdometerRecordID))
 	builder.WriteByte(')')
 	return builder.String()
 }

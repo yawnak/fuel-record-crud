@@ -40,15 +40,29 @@ func (orc *OdometerRecordCreate) SetCreatedAt(t time.Time) *OdometerRecordCreate
 	return orc
 }
 
-// SetID sets the "id" field.
-func (orc *OdometerRecordCreate) SetID(u uuid.UUID) *OdometerRecordCreate {
-	orc.mutation.SetID(u)
+// SetCarID sets the "car_id" field.
+func (orc *OdometerRecordCreate) SetCarID(u uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetCarID(u)
 	return orc
 }
 
-// SetCarID sets the "car" edge to the Car entity by ID.
-func (orc *OdometerRecordCreate) SetCarID(id uuid.UUID) *OdometerRecordCreate {
-	orc.mutation.SetCarID(id)
+// SetNextOdometerRecordID sets the "next_odometer_record_id" field.
+func (orc *OdometerRecordCreate) SetNextOdometerRecordID(u uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetNextOdometerRecordID(u)
+	return orc
+}
+
+// SetNillableNextOdometerRecordID sets the "next_odometer_record_id" field if the given value is not nil.
+func (orc *OdometerRecordCreate) SetNillableNextOdometerRecordID(u *uuid.UUID) *OdometerRecordCreate {
+	if u != nil {
+		orc.SetNextOdometerRecordID(*u)
+	}
+	return orc
+}
+
+// SetID sets the "id" field.
+func (orc *OdometerRecordCreate) SetID(u uuid.UUID) *OdometerRecordCreate {
+	orc.mutation.SetID(u)
 	return orc
 }
 
@@ -149,6 +163,9 @@ func (orc *OdometerRecordCreate) check() error {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OdometerRecord.created_at"`)}
 	}
 	if _, ok := orc.mutation.CarID(); !ok {
+		return &ValidationError{Name: "car_id", err: errors.New(`ent: missing required field "OdometerRecord.car_id"`)}
+	}
+	if _, ok := orc.mutation.CarID(); !ok {
 		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "OdometerRecord.car"`)}
 	}
 	return nil
@@ -212,7 +229,7 @@ func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.car_odometer_records = &nodes[0]
+		_node.CarID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := orc.mutation.PrevIDs(); len(nodes) > 0 {
@@ -229,7 +246,7 @@ func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.odometer_record_next = &nodes[0]
+		_node.NextOdometerRecordID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := orc.mutation.NextIDs(); len(nodes) > 0 {
