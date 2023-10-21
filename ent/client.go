@@ -536,7 +536,8 @@ func (c *FuelRecordClient) QueryPrev(fr *FuelRecord) *FuelRecordQuery {
 
 // Hooks returns the client hooks.
 func (c *FuelRecordClient) Hooks() []Hook {
-	return c.hooks.FuelRecord
+	hooks := c.hooks.FuelRecord
+	return append(hooks[:len(hooks):len(hooks)], fuelrecord.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.

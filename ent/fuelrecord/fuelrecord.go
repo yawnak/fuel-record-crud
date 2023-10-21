@@ -3,6 +3,7 @@
 package fuelrecord
 
 import (
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -69,7 +70,13 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/yawnak/fuel-record-crud/ent/runtime"
 var (
+	Hooks [1]ent.Hook
 	// CurrentFuelLitersValidator is a validator for the "current_fuel_liters" field. It is called by the builders before save.
 	CurrentFuelLitersValidator func(float64) error
 )

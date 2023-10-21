@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/yawnak/fuel-record-crud/ent/schema/schemahooks"
 )
 
 // FuelRecord holds the schema definition for the FuelRecord entity.
@@ -31,5 +32,11 @@ func (FuelRecord) Edges() []ent.Edge {
 			Unique().Required().Immutable().Field("car_id"),
 		edge.To("prev", FuelRecord.Type).Unique().Immutable().
 			From("next").Unique().Immutable().Field("next_fuel_record_id"),
+	}
+}
+
+func (FuelRecord) Hooks() []ent.Hook {
+	return []ent.Hook{
+		schemahooks.EnsureIsLast(),
 	}
 }
