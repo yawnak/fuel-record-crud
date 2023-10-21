@@ -996,12 +996,12 @@ func (m *FuelRecordMutation) ResetCarID() {
 }
 
 // SetNextFuelRecordID sets the "next_fuel_record_id" field.
-func (m *FuelRecordMutation) SetNextFuelRecordID(uu uuid.NullUUID) {
-	m.prev = &uu
+func (m *FuelRecordMutation) SetNextFuelRecordID(u uuid.UUID) {
+	m.prev = &u
 }
 
 // NextFuelRecordID returns the value of the "next_fuel_record_id" field in the mutation.
-func (m *FuelRecordMutation) NextFuelRecordID() (r uuid.NullUUID, exists bool) {
+func (m *FuelRecordMutation) NextFuelRecordID() (r uuid.UUID, exists bool) {
 	v := m.prev
 	if v == nil {
 		return
@@ -1012,7 +1012,7 @@ func (m *FuelRecordMutation) NextFuelRecordID() (r uuid.NullUUID, exists bool) {
 // OldNextFuelRecordID returns the old "next_fuel_record_id" field's value of the FuelRecord entity.
 // If the FuelRecord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FuelRecordMutation) OldNextFuelRecordID(ctx context.Context) (v uuid.NullUUID, err error) {
+func (m *FuelRecordMutation) OldNextFuelRecordID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNextFuelRecordID is only allowed on UpdateOne operations")
 	}
@@ -1275,7 +1275,7 @@ func (m *FuelRecordMutation) SetField(name string, value ent.Value) error {
 		m.SetCarID(v)
 		return nil
 	case fuelrecord.FieldNextFuelRecordID:
-		v, ok := value.(uuid.NullUUID)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

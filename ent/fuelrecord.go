@@ -28,7 +28,7 @@ type FuelRecord struct {
 	// CarID holds the value of the "car_id" field.
 	CarID uuid.UUID `json:"car_id,omitempty"`
 	// NextFuelRecordID holds the value of the "next_fuel_record_id" field.
-	NextFuelRecordID uuid.NullUUID `json:"next_fuel_record_id,omitempty"`
+	NextFuelRecordID uuid.UUID `json:"next_fuel_record_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FuelRecordQuery when eager-loading is set.
 	Edges        FuelRecordEdges `json:"edges"`
@@ -96,9 +96,7 @@ func (*FuelRecord) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case fuelrecord.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case fuelrecord.FieldNextFuelRecordID:
-			values[i] = new(uuid.NullUUID)
-		case fuelrecord.FieldID, fuelrecord.FieldCarID:
+		case fuelrecord.FieldID, fuelrecord.FieldCarID, fuelrecord.FieldNextFuelRecordID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -146,7 +144,7 @@ func (fr *FuelRecord) assignValues(columns []string, values []any) error {
 				fr.CarID = *value
 			}
 		case fuelrecord.FieldNextFuelRecordID:
-			if value, ok := values[i].(*uuid.NullUUID); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field next_fuel_record_id", values[i])
 			} else if value != nil {
 				fr.NextFuelRecordID = *value

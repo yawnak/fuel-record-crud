@@ -47,15 +47,15 @@ func (frc *FuelRecordCreate) SetCarID(u uuid.UUID) *FuelRecordCreate {
 }
 
 // SetNextFuelRecordID sets the "next_fuel_record_id" field.
-func (frc *FuelRecordCreate) SetNextFuelRecordID(uu uuid.NullUUID) *FuelRecordCreate {
-	frc.mutation.SetNextFuelRecordID(uu)
+func (frc *FuelRecordCreate) SetNextFuelRecordID(u uuid.UUID) *FuelRecordCreate {
+	frc.mutation.SetNextFuelRecordID(u)
 	return frc
 }
 
 // SetNillableNextFuelRecordID sets the "next_fuel_record_id" field if the given value is not nil.
-func (frc *FuelRecordCreate) SetNillableNextFuelRecordID(uu *uuid.NullUUID) *FuelRecordCreate {
-	if uu != nil {
-		frc.SetNextFuelRecordID(*uu)
+func (frc *FuelRecordCreate) SetNillableNextFuelRecordID(u *uuid.UUID) *FuelRecordCreate {
+	if u != nil {
+		frc.SetNextFuelRecordID(*u)
 	}
 	return frc
 }

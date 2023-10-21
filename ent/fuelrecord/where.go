@@ -77,7 +77,7 @@ func CarID(v uuid.UUID) predicate.FuelRecord {
 }
 
 // NextFuelRecordID applies equality check predicate on the "next_fuel_record_id" field. It's identical to NextFuelRecordIDEQ.
-func NextFuelRecordID(v uuid.NullUUID) predicate.FuelRecord {
+func NextFuelRecordID(v uuid.UUID) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldEQ(FieldNextFuelRecordID, v))
 }
 
@@ -222,22 +222,22 @@ func CarIDNotIn(vs ...uuid.UUID) predicate.FuelRecord {
 }
 
 // NextFuelRecordIDEQ applies the EQ predicate on the "next_fuel_record_id" field.
-func NextFuelRecordIDEQ(v uuid.NullUUID) predicate.FuelRecord {
+func NextFuelRecordIDEQ(v uuid.UUID) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldEQ(FieldNextFuelRecordID, v))
 }
 
 // NextFuelRecordIDNEQ applies the NEQ predicate on the "next_fuel_record_id" field.
-func NextFuelRecordIDNEQ(v uuid.NullUUID) predicate.FuelRecord {
+func NextFuelRecordIDNEQ(v uuid.UUID) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldNEQ(FieldNextFuelRecordID, v))
 }
 
 // NextFuelRecordIDIn applies the In predicate on the "next_fuel_record_id" field.
-func NextFuelRecordIDIn(vs ...uuid.NullUUID) predicate.FuelRecord {
+func NextFuelRecordIDIn(vs ...uuid.UUID) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldIn(FieldNextFuelRecordID, vs...))
 }
 
 // NextFuelRecordIDNotIn applies the NotIn predicate on the "next_fuel_record_id" field.
-func NextFuelRecordIDNotIn(vs ...uuid.NullUUID) predicate.FuelRecord {
+func NextFuelRecordIDNotIn(vs ...uuid.UUID) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldNotIn(FieldNextFuelRecordID, vs...))
 }
 
