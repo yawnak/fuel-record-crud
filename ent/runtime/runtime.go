@@ -31,6 +31,8 @@ func init() {
 	fuelrecordDescCurrentFuelLiters := fuelrecordFields[1].Descriptor()
 	// fuelrecord.CurrentFuelLitersValidator is a validator for the "current_fuel_liters" field. It is called by the builders before save.
 	fuelrecord.CurrentFuelLitersValidator = fuelrecordDescCurrentFuelLiters.Validators[0].(func(float64) error)
+	odometerrecordHooks := schema.OdometerRecord{}.Hooks()
+	odometerrecord.Hooks[0] = odometerrecordHooks[0]
 	odometerrecordFields := schema.OdometerRecord{}.Fields()
 	_ = odometerrecordFields
 	// odometerrecordDescCurrentFuelLiters is the schema descriptor for current_fuel_liters field.

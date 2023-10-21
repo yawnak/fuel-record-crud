@@ -27,32 +27,6 @@ func (fru *FuelRecordUpdate) Where(ps ...predicate.FuelRecord) *FuelRecordUpdate
 	return fru
 }
 
-// SetCurrentFuelLiters sets the "current_fuel_liters" field.
-func (fru *FuelRecordUpdate) SetCurrentFuelLiters(f float64) *FuelRecordUpdate {
-	fru.mutation.ResetCurrentFuelLiters()
-	fru.mutation.SetCurrentFuelLiters(f)
-	return fru
-}
-
-// AddCurrentFuelLiters adds f to the "current_fuel_liters" field.
-func (fru *FuelRecordUpdate) AddCurrentFuelLiters(f float64) *FuelRecordUpdate {
-	fru.mutation.AddCurrentFuelLiters(f)
-	return fru
-}
-
-// SetDifference sets the "difference" field.
-func (fru *FuelRecordUpdate) SetDifference(f float64) *FuelRecordUpdate {
-	fru.mutation.ResetDifference()
-	fru.mutation.SetDifference(f)
-	return fru
-}
-
-// AddDifference adds f to the "difference" field.
-func (fru *FuelRecordUpdate) AddDifference(f float64) *FuelRecordUpdate {
-	fru.mutation.AddDifference(f)
-	return fru
-}
-
 // Mutation returns the FuelRecordMutation object of the builder.
 func (fru *FuelRecordUpdate) Mutation() *FuelRecordMutation {
 	return fru.mutation
@@ -87,11 +61,6 @@ func (fru *FuelRecordUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (fru *FuelRecordUpdate) check() error {
-	if v, ok := fru.mutation.CurrentFuelLiters(); ok {
-		if err := fuelrecord.CurrentFuelLitersValidator(v); err != nil {
-			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "FuelRecord.current_fuel_liters": %w`, err)}
-		}
-	}
 	if _, ok := fru.mutation.CarID(); fru.mutation.CarCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "FuelRecord.car"`)
 	}
@@ -109,18 +78,6 @@ func (fru *FuelRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := fru.mutation.CurrentFuelLiters(); ok {
-		_spec.SetField(fuelrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := fru.mutation.AddedCurrentFuelLiters(); ok {
-		_spec.AddField(fuelrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := fru.mutation.Difference(); ok {
-		_spec.SetField(fuelrecord.FieldDifference, field.TypeFloat64, value)
-	}
-	if value, ok := fru.mutation.AddedDifference(); ok {
-		_spec.AddField(fuelrecord.FieldDifference, field.TypeFloat64, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, fru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -140,32 +97,6 @@ type FuelRecordUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *FuelRecordMutation
-}
-
-// SetCurrentFuelLiters sets the "current_fuel_liters" field.
-func (fruo *FuelRecordUpdateOne) SetCurrentFuelLiters(f float64) *FuelRecordUpdateOne {
-	fruo.mutation.ResetCurrentFuelLiters()
-	fruo.mutation.SetCurrentFuelLiters(f)
-	return fruo
-}
-
-// AddCurrentFuelLiters adds f to the "current_fuel_liters" field.
-func (fruo *FuelRecordUpdateOne) AddCurrentFuelLiters(f float64) *FuelRecordUpdateOne {
-	fruo.mutation.AddCurrentFuelLiters(f)
-	return fruo
-}
-
-// SetDifference sets the "difference" field.
-func (fruo *FuelRecordUpdateOne) SetDifference(f float64) *FuelRecordUpdateOne {
-	fruo.mutation.ResetDifference()
-	fruo.mutation.SetDifference(f)
-	return fruo
-}
-
-// AddDifference adds f to the "difference" field.
-func (fruo *FuelRecordUpdateOne) AddDifference(f float64) *FuelRecordUpdateOne {
-	fruo.mutation.AddDifference(f)
-	return fruo
 }
 
 // Mutation returns the FuelRecordMutation object of the builder.
@@ -215,11 +146,6 @@ func (fruo *FuelRecordUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (fruo *FuelRecordUpdateOne) check() error {
-	if v, ok := fruo.mutation.CurrentFuelLiters(); ok {
-		if err := fuelrecord.CurrentFuelLitersValidator(v); err != nil {
-			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "FuelRecord.current_fuel_liters": %w`, err)}
-		}
-	}
 	if _, ok := fruo.mutation.CarID(); fruo.mutation.CarCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "FuelRecord.car"`)
 	}
@@ -254,18 +180,6 @@ func (fruo *FuelRecordUpdateOne) sqlSave(ctx context.Context) (_node *FuelRecord
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := fruo.mutation.CurrentFuelLiters(); ok {
-		_spec.SetField(fuelrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := fruo.mutation.AddedCurrentFuelLiters(); ok {
-		_spec.AddField(fuelrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-	}
-	if value, ok := fruo.mutation.Difference(); ok {
-		_spec.SetField(fuelrecord.FieldDifference, field.TypeFloat64, value)
-	}
-	if value, ok := fruo.mutation.AddedDifference(); ok {
-		_spec.AddField(fuelrecord.FieldDifference, field.TypeFloat64, value)
 	}
 	_node = &FuelRecord{config: fruo.config}
 	_spec.Assign = _node.assignValues

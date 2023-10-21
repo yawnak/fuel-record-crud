@@ -718,7 +718,8 @@ func (c *OdometerRecordClient) QueryNext(or *OdometerRecord) *OdometerRecordQuer
 
 // Hooks returns the client hooks.
 func (c *OdometerRecordClient) Hooks() []Hook {
-	return c.hooks.OdometerRecord
+	hooks := c.hooks.OdometerRecord
+	return append(hooks[:len(hooks):len(hooks)], odometerrecord.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.

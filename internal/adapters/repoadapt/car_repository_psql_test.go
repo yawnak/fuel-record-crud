@@ -72,5 +72,6 @@ func TestCRUD(t *testing.T) {
 
 	fmt.Println(client.FuelRecord.QueryNext(firstFuel).All(ctx))
 	fmt.Println(client.FuelRecord.QueryPrev(secondFuel).All(ctx))
+
 	//fmt.Println(client.Car.QueryFuelRecords(res).Order(fuelrecord.ByCreatedAt(entsql.OrderDesc())))
 }
