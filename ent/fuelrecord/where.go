@@ -71,6 +71,16 @@ func CreatedAt(v time.Time) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// CarID applies equality check predicate on the "car_id" field. It's identical to CarIDEQ.
+func CarID(v uuid.UUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldEQ(FieldCarID, v))
+}
+
+// NextFuelRecordID applies equality check predicate on the "next_fuel_record_id" field. It's identical to NextFuelRecordIDEQ.
+func NextFuelRecordID(v uuid.NullUUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldEQ(FieldNextFuelRecordID, v))
+}
+
 // CurrentFuelLitersEQ applies the EQ predicate on the "current_fuel_liters" field.
 func CurrentFuelLitersEQ(v float64) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldEQ(FieldCurrentFuelLiters, v))
@@ -191,6 +201,56 @@ func CreatedAtLTE(v time.Time) predicate.FuelRecord {
 	return predicate.FuelRecord(sql.FieldLTE(FieldCreatedAt, v))
 }
 
+// CarIDEQ applies the EQ predicate on the "car_id" field.
+func CarIDEQ(v uuid.UUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldEQ(FieldCarID, v))
+}
+
+// CarIDNEQ applies the NEQ predicate on the "car_id" field.
+func CarIDNEQ(v uuid.UUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldNEQ(FieldCarID, v))
+}
+
+// CarIDIn applies the In predicate on the "car_id" field.
+func CarIDIn(vs ...uuid.UUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldIn(FieldCarID, vs...))
+}
+
+// CarIDNotIn applies the NotIn predicate on the "car_id" field.
+func CarIDNotIn(vs ...uuid.UUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldNotIn(FieldCarID, vs...))
+}
+
+// NextFuelRecordIDEQ applies the EQ predicate on the "next_fuel_record_id" field.
+func NextFuelRecordIDEQ(v uuid.NullUUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldEQ(FieldNextFuelRecordID, v))
+}
+
+// NextFuelRecordIDNEQ applies the NEQ predicate on the "next_fuel_record_id" field.
+func NextFuelRecordIDNEQ(v uuid.NullUUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldNEQ(FieldNextFuelRecordID, v))
+}
+
+// NextFuelRecordIDIn applies the In predicate on the "next_fuel_record_id" field.
+func NextFuelRecordIDIn(vs ...uuid.NullUUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldIn(FieldNextFuelRecordID, vs...))
+}
+
+// NextFuelRecordIDNotIn applies the NotIn predicate on the "next_fuel_record_id" field.
+func NextFuelRecordIDNotIn(vs ...uuid.NullUUID) predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldNotIn(FieldNextFuelRecordID, vs...))
+}
+
+// NextFuelRecordIDIsNil applies the IsNil predicate on the "next_fuel_record_id" field.
+func NextFuelRecordIDIsNil() predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldIsNull(FieldNextFuelRecordID))
+}
+
+// NextFuelRecordIDNotNil applies the NotNil predicate on the "next_fuel_record_id" field.
+func NextFuelRecordIDNotNil() predicate.FuelRecord {
+	return predicate.FuelRecord(sql.FieldNotNull(FieldNextFuelRecordID))
+}
+
 // HasCar applies the HasEdge predicate on the "car" edge.
 func HasCar() predicate.FuelRecord {
 	return predicate.FuelRecord(func(s *sql.Selector) {
@@ -214,35 +274,12 @@ func HasCarWith(preds ...predicate.Car) predicate.FuelRecord {
 	})
 }
 
-// HasNext applies the HasEdge predicate on the "next" edge.
-func HasNext() predicate.FuelRecord {
-	return predicate.FuelRecord(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, NextTable, NextColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasNextWith applies the HasEdge predicate on the "next" edge with a given conditions (other predicates).
-func HasNextWith(preds ...predicate.FuelRecord) predicate.FuelRecord {
-	return predicate.FuelRecord(func(s *sql.Selector) {
-		step := newNextStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasPrev applies the HasEdge predicate on the "prev" edge.
 func HasPrev() predicate.FuelRecord {
 	return predicate.FuelRecord(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, PrevTable, PrevColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, PrevTable, PrevColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -252,6 +289,29 @@ func HasPrev() predicate.FuelRecord {
 func HasPrevWith(preds ...predicate.FuelRecord) predicate.FuelRecord {
 	return predicate.FuelRecord(func(s *sql.Selector) {
 		step := newPrevStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNext applies the HasEdge predicate on the "next" edge.
+func HasNext() predicate.FuelRecord {
+	return predicate.FuelRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, NextTable, NextColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNextWith applies the HasEdge predicate on the "next" edge with a given conditions (other predicates).
+func HasNextWith(preds ...predicate.FuelRecord) predicate.FuelRecord {
+	return predicate.FuelRecord(func(s *sql.Selector) {
+		step := newNextStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -457,7 +457,9 @@ func (cq *CarQuery) loadFuelRecords(ctx context.Context, query *FuelRecordQuery,
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(fuelrecord.FieldCarID)
+	}
 	query.Where(predicate.FuelRecord(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(car.FuelRecordsColumn), fks...))
 	}))
@@ -466,13 +468,10 @@ func (cq *CarQuery) loadFuelRecords(ctx context.Context, query *FuelRecordQuery,
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.car_fuel_records
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "car_fuel_records" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CarID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "car_fuel_records" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "car_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

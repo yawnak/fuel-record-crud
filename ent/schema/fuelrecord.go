@@ -19,15 +19,17 @@ func (FuelRecord) Fields() []ent.Field {
 		field.Float("current_fuel_liters").Positive(),
 		field.Float("difference"),
 		field.Time("created_at").Immutable(),
-		field.UUID("next_fuel_record_id", uuid.NullUUID{}).Optional(),
+		field.UUID("car_id", uuid.UUID{}).Immutable(),
+		field.UUID("next_fuel_record_id", uuid.NullUUID{}).Optional().Immutable(),
 	}
 }
 
 // Edges of the FuelRecord.
 func (FuelRecord) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("car", Car.Type).Ref("fuel_records").Unique().Required(),
+		edge.From("car", Car.Type).Ref("fuel_records").
+			Unique().Required().Immutable().Field("car_id"),
 		edge.To("next", FuelRecord.Type).Unique().Immutable().
-			From("prev").Unique().Immutable(),
+			From("prev").Unique().Immutable().Field("next_fuel_record_id"),
 	}
 }

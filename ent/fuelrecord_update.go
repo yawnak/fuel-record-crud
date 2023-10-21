@@ -10,8 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
-	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 	"github.com/yawnak/fuel-record-crud/ent/predicate"
 )
@@ -55,76 +53,9 @@ func (fru *FuelRecordUpdate) AddDifference(f float64) *FuelRecordUpdate {
 	return fru
 }
 
-// SetCarID sets the "car" edge to the Car entity by ID.
-func (fru *FuelRecordUpdate) SetCarID(id uuid.UUID) *FuelRecordUpdate {
-	fru.mutation.SetCarID(id)
-	return fru
-}
-
-// SetCar sets the "car" edge to the Car entity.
-func (fru *FuelRecordUpdate) SetCar(c *Car) *FuelRecordUpdate {
-	return fru.SetCarID(c.ID)
-}
-
-// SetNextID sets the "next" edge to the FuelRecord entity by ID.
-func (fru *FuelRecordUpdate) SetNextID(id uuid.UUID) *FuelRecordUpdate {
-	fru.mutation.SetNextID(id)
-	return fru
-}
-
-// SetNillableNextID sets the "next" edge to the FuelRecord entity by ID if the given value is not nil.
-func (fru *FuelRecordUpdate) SetNillableNextID(id *uuid.UUID) *FuelRecordUpdate {
-	if id != nil {
-		fru = fru.SetNextID(*id)
-	}
-	return fru
-}
-
-// SetNext sets the "next" edge to the FuelRecord entity.
-func (fru *FuelRecordUpdate) SetNext(f *FuelRecord) *FuelRecordUpdate {
-	return fru.SetNextID(f.ID)
-}
-
-// SetPrevID sets the "prev" edge to the FuelRecord entity by ID.
-func (fru *FuelRecordUpdate) SetPrevID(id uuid.UUID) *FuelRecordUpdate {
-	fru.mutation.SetPrevID(id)
-	return fru
-}
-
-// SetNillablePrevID sets the "prev" edge to the FuelRecord entity by ID if the given value is not nil.
-func (fru *FuelRecordUpdate) SetNillablePrevID(id *uuid.UUID) *FuelRecordUpdate {
-	if id != nil {
-		fru = fru.SetPrevID(*id)
-	}
-	return fru
-}
-
-// SetPrev sets the "prev" edge to the FuelRecord entity.
-func (fru *FuelRecordUpdate) SetPrev(f *FuelRecord) *FuelRecordUpdate {
-	return fru.SetPrevID(f.ID)
-}
-
 // Mutation returns the FuelRecordMutation object of the builder.
 func (fru *FuelRecordUpdate) Mutation() *FuelRecordMutation {
 	return fru.mutation
-}
-
-// ClearCar clears the "car" edge to the Car entity.
-func (fru *FuelRecordUpdate) ClearCar() *FuelRecordUpdate {
-	fru.mutation.ClearCar()
-	return fru
-}
-
-// ClearNext clears the "next" edge to the FuelRecord entity.
-func (fru *FuelRecordUpdate) ClearNext() *FuelRecordUpdate {
-	fru.mutation.ClearNext()
-	return fru
-}
-
-// ClearPrev clears the "prev" edge to the FuelRecord entity.
-func (fru *FuelRecordUpdate) ClearPrev() *FuelRecordUpdate {
-	fru.mutation.ClearPrev()
-	return fru
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -191,93 +122,6 @@ func (fru *FuelRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := fru.mutation.AddedDifference(); ok {
 		_spec.AddField(fuelrecord.FieldDifference, field.TypeFloat64, value)
 	}
-	if fru.mutation.CarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   fuelrecord.CarTable,
-			Columns: []string{fuelrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fru.mutation.CarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   fuelrecord.CarTable,
-			Columns: []string{fuelrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if fru.mutation.NextCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   fuelrecord.NextTable,
-			Columns: []string{fuelrecord.NextColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fru.mutation.NextIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   fuelrecord.NextTable,
-			Columns: []string{fuelrecord.NextColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if fru.mutation.PrevCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   fuelrecord.PrevTable,
-			Columns: []string{fuelrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fru.mutation.PrevIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   fuelrecord.PrevTable,
-			Columns: []string{fuelrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, fru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{fuelrecord.Label}
@@ -324,76 +168,9 @@ func (fruo *FuelRecordUpdateOne) AddDifference(f float64) *FuelRecordUpdateOne {
 	return fruo
 }
 
-// SetCarID sets the "car" edge to the Car entity by ID.
-func (fruo *FuelRecordUpdateOne) SetCarID(id uuid.UUID) *FuelRecordUpdateOne {
-	fruo.mutation.SetCarID(id)
-	return fruo
-}
-
-// SetCar sets the "car" edge to the Car entity.
-func (fruo *FuelRecordUpdateOne) SetCar(c *Car) *FuelRecordUpdateOne {
-	return fruo.SetCarID(c.ID)
-}
-
-// SetNextID sets the "next" edge to the FuelRecord entity by ID.
-func (fruo *FuelRecordUpdateOne) SetNextID(id uuid.UUID) *FuelRecordUpdateOne {
-	fruo.mutation.SetNextID(id)
-	return fruo
-}
-
-// SetNillableNextID sets the "next" edge to the FuelRecord entity by ID if the given value is not nil.
-func (fruo *FuelRecordUpdateOne) SetNillableNextID(id *uuid.UUID) *FuelRecordUpdateOne {
-	if id != nil {
-		fruo = fruo.SetNextID(*id)
-	}
-	return fruo
-}
-
-// SetNext sets the "next" edge to the FuelRecord entity.
-func (fruo *FuelRecordUpdateOne) SetNext(f *FuelRecord) *FuelRecordUpdateOne {
-	return fruo.SetNextID(f.ID)
-}
-
-// SetPrevID sets the "prev" edge to the FuelRecord entity by ID.
-func (fruo *FuelRecordUpdateOne) SetPrevID(id uuid.UUID) *FuelRecordUpdateOne {
-	fruo.mutation.SetPrevID(id)
-	return fruo
-}
-
-// SetNillablePrevID sets the "prev" edge to the FuelRecord entity by ID if the given value is not nil.
-func (fruo *FuelRecordUpdateOne) SetNillablePrevID(id *uuid.UUID) *FuelRecordUpdateOne {
-	if id != nil {
-		fruo = fruo.SetPrevID(*id)
-	}
-	return fruo
-}
-
-// SetPrev sets the "prev" edge to the FuelRecord entity.
-func (fruo *FuelRecordUpdateOne) SetPrev(f *FuelRecord) *FuelRecordUpdateOne {
-	return fruo.SetPrevID(f.ID)
-}
-
 // Mutation returns the FuelRecordMutation object of the builder.
 func (fruo *FuelRecordUpdateOne) Mutation() *FuelRecordMutation {
 	return fruo.mutation
-}
-
-// ClearCar clears the "car" edge to the Car entity.
-func (fruo *FuelRecordUpdateOne) ClearCar() *FuelRecordUpdateOne {
-	fruo.mutation.ClearCar()
-	return fruo
-}
-
-// ClearNext clears the "next" edge to the FuelRecord entity.
-func (fruo *FuelRecordUpdateOne) ClearNext() *FuelRecordUpdateOne {
-	fruo.mutation.ClearNext()
-	return fruo
-}
-
-// ClearPrev clears the "prev" edge to the FuelRecord entity.
-func (fruo *FuelRecordUpdateOne) ClearPrev() *FuelRecordUpdateOne {
-	fruo.mutation.ClearPrev()
-	return fruo
 }
 
 // Where appends a list predicates to the FuelRecordUpdate builder.
@@ -489,93 +266,6 @@ func (fruo *FuelRecordUpdateOne) sqlSave(ctx context.Context) (_node *FuelRecord
 	}
 	if value, ok := fruo.mutation.AddedDifference(); ok {
 		_spec.AddField(fuelrecord.FieldDifference, field.TypeFloat64, value)
-	}
-	if fruo.mutation.CarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   fuelrecord.CarTable,
-			Columns: []string{fuelrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fruo.mutation.CarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   fuelrecord.CarTable,
-			Columns: []string{fuelrecord.CarColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if fruo.mutation.NextCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   fuelrecord.NextTable,
-			Columns: []string{fuelrecord.NextColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fruo.mutation.NextIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   fuelrecord.NextTable,
-			Columns: []string{fuelrecord.NextColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if fruo.mutation.PrevCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   fuelrecord.PrevTable,
-			Columns: []string{fuelrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fruo.mutation.PrevIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   fuelrecord.PrevTable,
-			Columns: []string{fuelrecord.PrevColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(fuelrecord.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &FuelRecord{config: fruo.config}
 	_spec.Assign = _node.assignValues

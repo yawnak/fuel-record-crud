@@ -27,8 +27,8 @@ var (
 		{Name: "current_fuel_liters", Type: field.TypeFloat64},
 		{Name: "difference", Type: field.TypeFloat64},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "car_fuel_records", Type: field.TypeUUID},
-		{Name: "fuel_record_prev", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "car_id", Type: field.TypeUUID},
+		{Name: "next_fuel_record_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// FuelRecordsTable holds the schema information for the "fuel_records" table.
 	FuelRecordsTable = &schema.Table{
@@ -43,7 +43,7 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "fuel_records_fuel_records_prev",
+				Symbol:     "fuel_records_fuel_records_next",
 				Columns:    []*schema.Column{FuelRecordsColumns[5]},
 				RefColumns: []*schema.Column{FuelRecordsColumns[0]},
 				OnDelete:   schema.SetNull,

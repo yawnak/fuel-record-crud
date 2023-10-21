@@ -18,12 +18,16 @@ const (
 	FieldDifference = "difference"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldCarID holds the string denoting the car_id field in the database.
+	FieldCarID = "car_id"
+	// FieldNextFuelRecordID holds the string denoting the next_fuel_record_id field in the database.
+	FieldNextFuelRecordID = "next_fuel_record_id"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
-	// EdgeNext holds the string denoting the next edge name in mutations.
-	EdgeNext = "next"
 	// EdgePrev holds the string denoting the prev edge name in mutations.
 	EdgePrev = "prev"
+	// EdgeNext holds the string denoting the next edge name in mutations.
+	EdgeNext = "next"
 	// CarFieldID holds the string denoting the ID field of the Car.
 	CarFieldID = "car_id"
 	// Table holds the table name of the fuelrecord in the database.
@@ -34,15 +38,15 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "car" package.
 	CarInverseTable = "cars"
 	// CarColumn is the table column denoting the car relation/edge.
-	CarColumn = "car_fuel_records"
-	// NextTable is the table that holds the next relation/edge.
-	NextTable = "fuel_records"
-	// NextColumn is the table column denoting the next relation/edge.
-	NextColumn = "fuel_record_prev"
+	CarColumn = "car_id"
 	// PrevTable is the table that holds the prev relation/edge.
 	PrevTable = "fuel_records"
 	// PrevColumn is the table column denoting the prev relation/edge.
-	PrevColumn = "fuel_record_prev"
+	PrevColumn = "next_fuel_record_id"
+	// NextTable is the table that holds the next relation/edge.
+	NextTable = "fuel_records"
+	// NextColumn is the table column denoting the next relation/edge.
+	NextColumn = "next_fuel_record_id"
 )
 
 // Columns holds all SQL columns for fuelrecord fields.
@@ -51,24 +55,14 @@ var Columns = []string{
 	FieldCurrentFuelLiters,
 	FieldDifference,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "fuel_records"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"car_fuel_records",
-	"fuel_record_prev",
+	FieldCarID,
+	FieldNextFuelRecordID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -103,17 +97,20 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
+// ByCarID orders the results by the car_id field.
+func ByCarID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarID, opts...).ToFunc()
+}
+
+// ByNextFuelRecordID orders the results by the next_fuel_record_id field.
+func ByNextFuelRecordID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNextFuelRecordID, opts...).ToFunc()
+}
+
 // ByCarField orders the results by car field.
 func ByCarField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newCarStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByNextField orders the results by next field.
-func ByNextField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newNextStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -123,6 +120,13 @@ func ByPrevField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPrevStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByNextField orders the results by next field.
+func ByNextField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNextStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -130,17 +134,17 @@ func newCarStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, CarTable, CarColumn),
 	)
 }
-func newNextStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, NextTable, NextColumn),
-	)
-}
 func newPrevStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, PrevTable, PrevColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, PrevTable, PrevColumn),
+	)
+}
+func newNextStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, NextTable, NextColumn),
 	)
 }

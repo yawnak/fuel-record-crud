@@ -25,22 +25,24 @@ type FuelRecord struct {
 	Difference float64 `json:"difference,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// CarID holds the value of the "car_id" field.
+	CarID uuid.UUID `json:"car_id,omitempty"`
+	// NextFuelRecordID holds the value of the "next_fuel_record_id" field.
+	NextFuelRecordID uuid.NullUUID `json:"next_fuel_record_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FuelRecordQuery when eager-loading is set.
-	Edges            FuelRecordEdges `json:"edges"`
-	car_fuel_records *uuid.UUID
-	fuel_record_prev *uuid.UUID
-	selectValues     sql.SelectValues
+	Edges        FuelRecordEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // FuelRecordEdges holds the relations/edges for other nodes in the graph.
 type FuelRecordEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
-	// Next holds the value of the next edge.
-	Next *FuelRecord `json:"next,omitempty"`
 	// Prev holds the value of the prev edge.
 	Prev *FuelRecord `json:"prev,omitempty"`
+	// Next holds the value of the next edge.
+	Next *FuelRecord `json:"next,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -59,23 +61,10 @@ func (e FuelRecordEdges) CarOrErr() (*Car, error) {
 	return nil, &NotLoadedError{edge: "car"}
 }
 
-// NextOrErr returns the Next value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e FuelRecordEdges) NextOrErr() (*FuelRecord, error) {
-	if e.loadedTypes[1] {
-		if e.Next == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: fuelrecord.Label}
-		}
-		return e.Next, nil
-	}
-	return nil, &NotLoadedError{edge: "next"}
-}
-
 // PrevOrErr returns the Prev value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e FuelRecordEdges) PrevOrErr() (*FuelRecord, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		if e.Prev == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: fuelrecord.Label}
@@ -83,6 +72,19 @@ func (e FuelRecordEdges) PrevOrErr() (*FuelRecord, error) {
 		return e.Prev, nil
 	}
 	return nil, &NotLoadedError{edge: "prev"}
+}
+
+// NextOrErr returns the Next value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FuelRecordEdges) NextOrErr() (*FuelRecord, error) {
+	if e.loadedTypes[2] {
+		if e.Next == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: fuelrecord.Label}
+		}
+		return e.Next, nil
+	}
+	return nil, &NotLoadedError{edge: "next"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -94,12 +96,10 @@ func (*FuelRecord) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case fuelrecord.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case fuelrecord.FieldID:
+		case fuelrecord.FieldNextFuelRecordID:
+			values[i] = new(uuid.NullUUID)
+		case fuelrecord.FieldID, fuelrecord.FieldCarID:
 			values[i] = new(uuid.UUID)
-		case fuelrecord.ForeignKeys[0]: // car_fuel_records
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case fuelrecord.ForeignKeys[1]: // fuel_record_prev
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -139,19 +139,17 @@ func (fr *FuelRecord) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				fr.CreatedAt = value.Time
 			}
-		case fuelrecord.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field car_fuel_records", values[i])
-			} else if value.Valid {
-				fr.car_fuel_records = new(uuid.UUID)
-				*fr.car_fuel_records = *value.S.(*uuid.UUID)
+		case fuelrecord.FieldCarID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field car_id", values[i])
+			} else if value != nil {
+				fr.CarID = *value
 			}
-		case fuelrecord.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field fuel_record_prev", values[i])
-			} else if value.Valid {
-				fr.fuel_record_prev = new(uuid.UUID)
-				*fr.fuel_record_prev = *value.S.(*uuid.UUID)
+		case fuelrecord.FieldNextFuelRecordID:
+			if value, ok := values[i].(*uuid.NullUUID); !ok {
+				return fmt.Errorf("unexpected type %T for field next_fuel_record_id", values[i])
+			} else if value != nil {
+				fr.NextFuelRecordID = *value
 			}
 		default:
 			fr.selectValues.Set(columns[i], values[i])
@@ -171,14 +169,14 @@ func (fr *FuelRecord) QueryCar() *CarQuery {
 	return NewFuelRecordClient(fr.config).QueryCar(fr)
 }
 
-// QueryNext queries the "next" edge of the FuelRecord entity.
-func (fr *FuelRecord) QueryNext() *FuelRecordQuery {
-	return NewFuelRecordClient(fr.config).QueryNext(fr)
-}
-
 // QueryPrev queries the "prev" edge of the FuelRecord entity.
 func (fr *FuelRecord) QueryPrev() *FuelRecordQuery {
 	return NewFuelRecordClient(fr.config).QueryPrev(fr)
+}
+
+// QueryNext queries the "next" edge of the FuelRecord entity.
+func (fr *FuelRecord) QueryNext() *FuelRecordQuery {
+	return NewFuelRecordClient(fr.config).QueryNext(fr)
 }
 
 // Update returns a builder for updating this FuelRecord.
@@ -212,6 +210,12 @@ func (fr *FuelRecord) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(fr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("car_id=")
+	builder.WriteString(fmt.Sprintf("%v", fr.CarID))
+	builder.WriteString(", ")
+	builder.WriteString("next_fuel_record_id=")
+	builder.WriteString(fmt.Sprintf("%v", fr.NextFuelRecordID))
 	builder.WriteByte(')')
 	return builder.String()
 }

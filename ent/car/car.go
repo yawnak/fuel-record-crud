@@ -34,7 +34,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "fuelrecord" package.
 	FuelRecordsInverseTable = "fuel_records"
 	// FuelRecordsColumn is the table column denoting the fuel_records relation/edge.
-	FuelRecordsColumn = "car_fuel_records"
+	FuelRecordsColumn = "car_id"
 	// OdometerRecordsTable is the table that holds the odometer_records relation/edge.
 	OdometerRecordsTable = "odometer_records"
 	// OdometerRecordsInverseTable is the table name for the OdometerRecord entity.

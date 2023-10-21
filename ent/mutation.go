@@ -698,10 +698,10 @@ type FuelRecordMutation struct {
 	clearedFields          map[string]struct{}
 	car                    *uuid.UUID
 	clearedcar             bool
-	next                   *uuid.UUID
-	clearednext            bool
 	prev                   *uuid.UUID
 	clearedprev            bool
+	next                   *uuid.UUID
+	clearednext            bool
 	done                   bool
 	oldValue               func(context.Context) (*FuelRecord, error)
 	predicates             []predicate.FuelRecord
@@ -959,27 +959,100 @@ func (m *FuelRecordMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetCarID sets the "car" edge to the Car entity by id.
-func (m *FuelRecordMutation) SetCarID(id uuid.UUID) {
-	m.car = &id
+// SetCarID sets the "car_id" field.
+func (m *FuelRecordMutation) SetCarID(u uuid.UUID) {
+	m.car = &u
+}
+
+// CarID returns the value of the "car_id" field in the mutation.
+func (m *FuelRecordMutation) CarID() (r uuid.UUID, exists bool) {
+	v := m.car
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCarID returns the old "car_id" field's value of the FuelRecord entity.
+// If the FuelRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FuelRecordMutation) OldCarID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCarID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCarID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCarID: %w", err)
+	}
+	return oldValue.CarID, nil
+}
+
+// ResetCarID resets all changes to the "car_id" field.
+func (m *FuelRecordMutation) ResetCarID() {
+	m.car = nil
+}
+
+// SetNextFuelRecordID sets the "next_fuel_record_id" field.
+func (m *FuelRecordMutation) SetNextFuelRecordID(uu uuid.NullUUID) {
+	m.prev = &uu
+}
+
+// NextFuelRecordID returns the value of the "next_fuel_record_id" field in the mutation.
+func (m *FuelRecordMutation) NextFuelRecordID() (r uuid.NullUUID, exists bool) {
+	v := m.prev
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNextFuelRecordID returns the old "next_fuel_record_id" field's value of the FuelRecord entity.
+// If the FuelRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FuelRecordMutation) OldNextFuelRecordID(ctx context.Context) (v uuid.NullUUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNextFuelRecordID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNextFuelRecordID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNextFuelRecordID: %w", err)
+	}
+	return oldValue.NextFuelRecordID, nil
+}
+
+// ClearNextFuelRecordID clears the value of the "next_fuel_record_id" field.
+func (m *FuelRecordMutation) ClearNextFuelRecordID() {
+	m.prev = nil
+	m.clearedFields[fuelrecord.FieldNextFuelRecordID] = struct{}{}
+}
+
+// NextFuelRecordIDCleared returns if the "next_fuel_record_id" field was cleared in this mutation.
+func (m *FuelRecordMutation) NextFuelRecordIDCleared() bool {
+	_, ok := m.clearedFields[fuelrecord.FieldNextFuelRecordID]
+	return ok
+}
+
+// ResetNextFuelRecordID resets all changes to the "next_fuel_record_id" field.
+func (m *FuelRecordMutation) ResetNextFuelRecordID() {
+	m.prev = nil
+	delete(m.clearedFields, fuelrecord.FieldNextFuelRecordID)
 }
 
 // ClearCar clears the "car" edge to the Car entity.
 func (m *FuelRecordMutation) ClearCar() {
 	m.clearedcar = true
+	m.clearedFields[fuelrecord.FieldCarID] = struct{}{}
 }
 
 // CarCleared reports if the "car" edge to the Car entity was cleared.
 func (m *FuelRecordMutation) CarCleared() bool {
 	return m.clearedcar
-}
-
-// CarID returns the "car" edge ID in the mutation.
-func (m *FuelRecordMutation) CarID() (id uuid.UUID, exists bool) {
-	if m.car != nil {
-		return *m.car, true
-	}
-	return
 }
 
 // CarIDs returns the "car" edge IDs in the mutation.
@@ -996,6 +1069,46 @@ func (m *FuelRecordMutation) CarIDs() (ids []uuid.UUID) {
 func (m *FuelRecordMutation) ResetCar() {
 	m.car = nil
 	m.clearedcar = false
+}
+
+// SetPrevID sets the "prev" edge to the FuelRecord entity by id.
+func (m *FuelRecordMutation) SetPrevID(id uuid.UUID) {
+	m.prev = &id
+}
+
+// ClearPrev clears the "prev" edge to the FuelRecord entity.
+func (m *FuelRecordMutation) ClearPrev() {
+	m.clearedprev = true
+	m.clearedFields[fuelrecord.FieldNextFuelRecordID] = struct{}{}
+}
+
+// PrevCleared reports if the "prev" edge to the FuelRecord entity was cleared.
+func (m *FuelRecordMutation) PrevCleared() bool {
+	return m.NextFuelRecordIDCleared() || m.clearedprev
+}
+
+// PrevID returns the "prev" edge ID in the mutation.
+func (m *FuelRecordMutation) PrevID() (id uuid.UUID, exists bool) {
+	if m.prev != nil {
+		return *m.prev, true
+	}
+	return
+}
+
+// PrevIDs returns the "prev" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrevID instead. It exists only for internal usage by the builders.
+func (m *FuelRecordMutation) PrevIDs() (ids []uuid.UUID) {
+	if id := m.prev; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPrev resets all changes to the "prev" edge.
+func (m *FuelRecordMutation) ResetPrev() {
+	m.prev = nil
+	m.clearedprev = false
 }
 
 // SetNextID sets the "next" edge to the FuelRecord entity by id.
@@ -1037,45 +1150,6 @@ func (m *FuelRecordMutation) ResetNext() {
 	m.clearednext = false
 }
 
-// SetPrevID sets the "prev" edge to the FuelRecord entity by id.
-func (m *FuelRecordMutation) SetPrevID(id uuid.UUID) {
-	m.prev = &id
-}
-
-// ClearPrev clears the "prev" edge to the FuelRecord entity.
-func (m *FuelRecordMutation) ClearPrev() {
-	m.clearedprev = true
-}
-
-// PrevCleared reports if the "prev" edge to the FuelRecord entity was cleared.
-func (m *FuelRecordMutation) PrevCleared() bool {
-	return m.clearedprev
-}
-
-// PrevID returns the "prev" edge ID in the mutation.
-func (m *FuelRecordMutation) PrevID() (id uuid.UUID, exists bool) {
-	if m.prev != nil {
-		return *m.prev, true
-	}
-	return
-}
-
-// PrevIDs returns the "prev" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PrevID instead. It exists only for internal usage by the builders.
-func (m *FuelRecordMutation) PrevIDs() (ids []uuid.UUID) {
-	if id := m.prev; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetPrev resets all changes to the "prev" edge.
-func (m *FuelRecordMutation) ResetPrev() {
-	m.prev = nil
-	m.clearedprev = false
-}
-
 // Where appends a list predicates to the FuelRecordMutation builder.
 func (m *FuelRecordMutation) Where(ps ...predicate.FuelRecord) {
 	m.predicates = append(m.predicates, ps...)
@@ -1110,7 +1184,7 @@ func (m *FuelRecordMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FuelRecordMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.current_fuel_liters != nil {
 		fields = append(fields, fuelrecord.FieldCurrentFuelLiters)
 	}
@@ -1119,6 +1193,12 @@ func (m *FuelRecordMutation) Fields() []string {
 	}
 	if m.created_at != nil {
 		fields = append(fields, fuelrecord.FieldCreatedAt)
+	}
+	if m.car != nil {
+		fields = append(fields, fuelrecord.FieldCarID)
+	}
+	if m.prev != nil {
+		fields = append(fields, fuelrecord.FieldNextFuelRecordID)
 	}
 	return fields
 }
@@ -1134,6 +1214,10 @@ func (m *FuelRecordMutation) Field(name string) (ent.Value, bool) {
 		return m.Difference()
 	case fuelrecord.FieldCreatedAt:
 		return m.CreatedAt()
+	case fuelrecord.FieldCarID:
+		return m.CarID()
+	case fuelrecord.FieldNextFuelRecordID:
+		return m.NextFuelRecordID()
 	}
 	return nil, false
 }
@@ -1149,6 +1233,10 @@ func (m *FuelRecordMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldDifference(ctx)
 	case fuelrecord.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case fuelrecord.FieldCarID:
+		return m.OldCarID(ctx)
+	case fuelrecord.FieldNextFuelRecordID:
+		return m.OldNextFuelRecordID(ctx)
 	}
 	return nil, fmt.Errorf("unknown FuelRecord field %s", name)
 }
@@ -1178,6 +1266,20 @@ func (m *FuelRecordMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case fuelrecord.FieldCarID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCarID(v)
+		return nil
+	case fuelrecord.FieldNextFuelRecordID:
+		v, ok := value.(uuid.NullUUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNextFuelRecordID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown FuelRecord field %s", name)
@@ -1235,7 +1337,11 @@ func (m *FuelRecordMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *FuelRecordMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(fuelrecord.FieldNextFuelRecordID) {
+		fields = append(fields, fuelrecord.FieldNextFuelRecordID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1248,6 +1354,11 @@ func (m *FuelRecordMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *FuelRecordMutation) ClearField(name string) error {
+	switch name {
+	case fuelrecord.FieldNextFuelRecordID:
+		m.ClearNextFuelRecordID()
+		return nil
+	}
 	return fmt.Errorf("unknown FuelRecord nullable field %s", name)
 }
 
@@ -1264,6 +1375,12 @@ func (m *FuelRecordMutation) ResetField(name string) error {
 	case fuelrecord.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
+	case fuelrecord.FieldCarID:
+		m.ResetCarID()
+		return nil
+	case fuelrecord.FieldNextFuelRecordID:
+		m.ResetNextFuelRecordID()
+		return nil
 	}
 	return fmt.Errorf("unknown FuelRecord field %s", name)
 }
@@ -1274,11 +1391,11 @@ func (m *FuelRecordMutation) AddedEdges() []string {
 	if m.car != nil {
 		edges = append(edges, fuelrecord.EdgeCar)
 	}
-	if m.next != nil {
-		edges = append(edges, fuelrecord.EdgeNext)
-	}
 	if m.prev != nil {
 		edges = append(edges, fuelrecord.EdgePrev)
+	}
+	if m.next != nil {
+		edges = append(edges, fuelrecord.EdgeNext)
 	}
 	return edges
 }
@@ -1291,12 +1408,12 @@ func (m *FuelRecordMutation) AddedIDs(name string) []ent.Value {
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
-	case fuelrecord.EdgeNext:
-		if id := m.next; id != nil {
-			return []ent.Value{*id}
-		}
 	case fuelrecord.EdgePrev:
 		if id := m.prev; id != nil {
+			return []ent.Value{*id}
+		}
+	case fuelrecord.EdgeNext:
+		if id := m.next; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -1321,11 +1438,11 @@ func (m *FuelRecordMutation) ClearedEdges() []string {
 	if m.clearedcar {
 		edges = append(edges, fuelrecord.EdgeCar)
 	}
-	if m.clearednext {
-		edges = append(edges, fuelrecord.EdgeNext)
-	}
 	if m.clearedprev {
 		edges = append(edges, fuelrecord.EdgePrev)
+	}
+	if m.clearednext {
+		edges = append(edges, fuelrecord.EdgeNext)
 	}
 	return edges
 }
@@ -1336,10 +1453,10 @@ func (m *FuelRecordMutation) EdgeCleared(name string) bool {
 	switch name {
 	case fuelrecord.EdgeCar:
 		return m.clearedcar
-	case fuelrecord.EdgeNext:
-		return m.clearednext
 	case fuelrecord.EdgePrev:
 		return m.clearedprev
+	case fuelrecord.EdgeNext:
+		return m.clearednext
 	}
 	return false
 }
@@ -1351,11 +1468,11 @@ func (m *FuelRecordMutation) ClearEdge(name string) error {
 	case fuelrecord.EdgeCar:
 		m.ClearCar()
 		return nil
-	case fuelrecord.EdgeNext:
-		m.ClearNext()
-		return nil
 	case fuelrecord.EdgePrev:
 		m.ClearPrev()
+		return nil
+	case fuelrecord.EdgeNext:
+		m.ClearNext()
 		return nil
 	}
 	return fmt.Errorf("unknown FuelRecord unique edge %s", name)
@@ -1368,11 +1485,11 @@ func (m *FuelRecordMutation) ResetEdge(name string) error {
 	case fuelrecord.EdgeCar:
 		m.ResetCar()
 		return nil
-	case fuelrecord.EdgeNext:
-		m.ResetNext()
-		return nil
 	case fuelrecord.EdgePrev:
 		m.ResetPrev()
+		return nil
+	case fuelrecord.EdgeNext:
+		m.ResetNext()
 		return nil
 	}
 	return fmt.Errorf("unknown FuelRecord edge %s", name)
