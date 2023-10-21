@@ -28,6 +28,6 @@ func (FuelRecord) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("car", Car.Type).Ref("fuel_records").Unique().Required(),
 		edge.To("next", FuelRecord.Type).Unique().Immutable().
-			From("next").Unique().Immutable(),
+			From("prev").Unique().Immutable(),
 	}
 }
