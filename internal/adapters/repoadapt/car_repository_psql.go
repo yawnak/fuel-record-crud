@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/samber/lo"
 	"github.com/yawnak/fuel-record-crud/ent"
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 )
@@ -63,12 +64,22 @@ func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c car.Car) (car.Ca
 	return EntCarToCar(newCar), nil
 }
 
-func (repo *CarRepositoryPSQL) ReadCar(ctx context.Context, id uuid.UUID) (car.Car, error) {
+func (repo *CarRepositoryPSQL) GetCar(ctx context.Context, id uuid.UUID) (car.Car, error) {
 	getCar, err := repo.client.Get(ctx, id)
 	if err != nil {
 		return car.Car{}, err
 	}
 	return EntCarToCar(getCar), nil
+}
+
+func (repo *CarRepositoryPSQL) QueryCars(ctx context.Context, id uuid.UUID) ([]car.Car, error) {
+	getCars, err := repo.client.Query().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return lo.Map(getCars, func(getCar *ent.Car, _ int) car.Car {
+		return EntCarToCar(getCar)
+	}), nil
 }
 
 func (repo *CarRepositoryPSQL) UpdateCar(ctx context.Context, c car.Car) (car.Car, error) {
