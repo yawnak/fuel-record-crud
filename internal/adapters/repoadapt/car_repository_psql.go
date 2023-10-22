@@ -2,91 +2,83 @@ package repoadapt
 
 import (
 	"context"
+	"fmt"
 
+	dbsql "database/sql"
+
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
+
+	"github.com/google/uuid"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/yawnak/fuel-record-crud/ent"
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 )
 
-// type carModel struct {
-// 	CarId            string `db:"car_id"`
-// 	Make             string `db:"make"`
-// 	Model            string `db:"model"`
-// 	Year             int64  `db:"year"`
-// 	LastFuelRecordId string `db:"last_fuel_record_id"`
-// }
-
-// type fuelRecordModel struct {
-// 	FuelRecordId     string    `db:"fuel_record_id"`
-// 	PreviousRecordId *string   `db:"previous_record_id"`
-// 	NextRecordId     *string   `db:"next_record_id"`
-// 	CurrentFuel      float64   `db:"current_fuel"`
-// 	Difference       float64   `db:"difference"`
-// 	CreatedAt        time.Time `db:"created_at"`
-// }
-
-// func unmarshalCar(car car.Car) carModel {
-// 	return carModel{
-// 		CarId: car.Id().String(),
-// 		Make:  car.Make(),
-// 		Model: car.Model(),
-// 		Year:  car.Year(),
-// 		//LastFuelRecordId: car.CurrentFuelRecord().Id().String(),
-// 	}
-// }
-
-// func marshalCar(carMd carModel, fuelRecordMd fuelRecordModel) (car.Car, error) {
-// 	carid, err := uuid.Parse(carMd.CarId)
-// 	if err != nil {
-// 		log.Println("error parsing car id", err)
-// 	}
-
-// 	if carMd.LastFuelRecordId != fuelRecordMd.FuelRecordId {
-// 		log.Println("last fuel record id does not match fuel record id")
-// 	}
-
-// 	fuelRecordId, err := uuid.Parse(fuelRecordMd.FuelRecordId)
-// 	if err != nil {
-// 		log.Println("error parsing last fuel record id", err)
-// 	}
-
-// 	previoudRecordId := uuid.NullUUID{}
-// 	if fuelRecordMd.PreviousRecordId != nil {
-// 		previoudRecordId.Valid = true
-// 		previoudRecordId.UUID, err = uuid.Parse(*fuelRecordMd.PreviousRecordId)
-// 		if err != nil {
-// 			log.Println("error parsing previous record id", err)
-// 		}
-// 	}
-// 	nextRecordId := uuid.NullUUID{}
-// 	if fuelRecordMd.NextRecordId != nil {
-// 		nextRecordId.Valid = true
-// 		nextRecordId.UUID, err = uuid.Parse(*fuelRecordMd.NextRecordId)
-// 		if err != nil {
-// 			log.Println("error parsing next record id", err)
-// 		}
-// 	}
-
-// 	return car.UnmarshalCarFromDatabase(
-// 		carid,
-// 		carMd.Make,
-// 		carMd.Model,
-// 		carMd.Year,
-// 		car.UnmarshalFuelRecordFromDatabase(
-// 			fuelRecordId,
-// 			previoudRecordId,
-// 			nextRecordId,
-// 			fuelRecordMd.CurrentFuel,
-// 			fuelRecordMd.Difference,
-// 			fuelRecordMd.CreatedAt,
-// 		),
-// 	), nil
-// }
-
-type CarRepositoryPSQL struct {
-	client *ent.Client
+func EntCarToCar(entCar *ent.Car) car.Car {
+	return car.UnmarshalCarFromDatabase(
+		entCar.ID,
+		entCar.Make,
+		entCar.Model,
+		entCar.Year,
+	)
 }
 
-func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c car.Car) error {
-	
-	return nil
+func CarToCreate(c car.Car, carCreator *ent.CarCreate) *ent.CarCreate {
+	return carCreator.
+		SetID(c.Id()).
+		SetMake(c.Make()).
+		SetModel(c.Model()).
+		SetYear(c.Year())
+}
+
+func CarToUpdateOne(c car.Car, carUpdater *ent.CarUpdateOne) *ent.CarUpdateOne {
+	return carUpdater.
+		SetMake(c.Make()).
+		SetModel(c.Model()).
+		SetYear(c.Year())
+}
+
+type CarRepositoryPSQL struct {
+	client *ent.CarClient
+}
+
+func NewCarRepositoryPSQL(user, password, host, port, dbname string) (*CarRepositoryPSQL, error) {
+	databaseURL := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", user, password, host, port, dbname)
+
+	db, err := dbsql.Open("pgx", databaseURL)
+	if err != nil {
+		return nil, err
+	}
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	client := ent.NewClient(ent.Driver(drv)).Car
+	return &CarRepositoryPSQL{client: client}, nil
+}
+
+func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c car.Car) (car.Car, error) {
+	newCar, err := CarToCreate(c, repo.client.Create()).Save(ctx)
+	if err != nil {
+		return car.Car{}, err
+	}
+	return EntCarToCar(newCar), nil
+}
+
+func (repo *CarRepositoryPSQL) ReadCar(ctx context.Context, id uuid.UUID) (car.Car, error) {
+	getCar, err := repo.client.Get(ctx, id)
+	if err != nil {
+		return car.Car{}, err
+	}
+	return EntCarToCar(getCar), nil
+}
+
+func (repo *CarRepositoryPSQL) UpdateCar(ctx context.Context, c car.Car) (car.Car, error) {
+	updatedCar, err := CarToUpdateOne(c, repo.client.UpdateOneID(c.Id())).Save(ctx)
+	if err != nil {
+		return car.Car{}, err
+	}
+	return EntCarToCar(updatedCar), nil
+}
+
+func (repo *CarRepositoryPSQL) DeleteCar(ctx context.Context, id uuid.UUID) error {
+	return repo.client.DeleteOneID(id).Exec(ctx)
 }

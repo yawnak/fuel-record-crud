@@ -14,7 +14,7 @@ func (car *Car) Model() string {
 	return car.model
 }
 
-func (car *Car) Year() int16 {
+func (car *Car) Year() int32 {
 	return car.year
 }
 
@@ -26,6 +26,6 @@ func (car *Car) SetModel(model string) {
 	car.model = model
 }
 
-func (car *Car) SetYear(year int16) {
+func (car *Car) SetYear(year int32) {
 	car.year = year
 }
