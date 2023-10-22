@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	TypeInternal = "internal"
-	TypeUnknown  = "unknown"
+	TypeInternal          = "internal"
+	TypeUnknown           = "unknown"
+	TypeInvalidQueryParam = "invalid_query_param"
 )
 
 type SError struct {
@@ -27,5 +28,14 @@ func NewInternal(err error) *SError {
 		Code:    http.StatusInternalServerError,
 		ErrType: TypeInternal,
 		Err:     err,
+	}
+}
+
+func NewInvalidQueryParam(message string, err error) *SError {
+	return &SError{
+		Code:           http.StatusBadRequest,
+		ErrType:        TypeInvalidQueryParam,
+		DisplayMessage: message,
+		Err:            err,
 	}
 }

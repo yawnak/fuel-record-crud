@@ -24,6 +24,12 @@ type CarCreateModel interface {
 	CreateCar(context.Context, car.Car) (car.Car, error)
 }
 
+type CreateVehicle struct {
+	Model string
+	Make  string
+	Year  int32
+}
+
 type CreateVehicleHandler struct {
 	carCreateModel CarCreateModel
 }
@@ -34,6 +40,7 @@ func NewCreateCar(createModel CarCreateModel) *CreateVehicleHandler {
 	}
 }
 
-func (c *CreateVehicleHandler) Handle(ctx context.Context, car car.Car) (car.Car, error) {
+func (c *CreateVehicleHandler) Handle(ctx context.Context, cmd CreateCar) (car.Car, error) {
+	car.New(cmd.Model, cmd.Make, cmd.Year)
 	return c.carCreateModel.CreateCar(ctx, car)
 }

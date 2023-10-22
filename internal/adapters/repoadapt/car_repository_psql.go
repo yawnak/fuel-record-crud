@@ -2,12 +2,6 @@ package repoadapt
 
 import (
 	"context"
-	"fmt"
-
-	dbsql "database/sql"
-
-	"entgo.io/ent/dialect"
-	entsql "entgo.io/ent/dialect/sql"
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -42,16 +36,6 @@ func CarToUpdateOne(c car.Car, carUpdater *ent.CarUpdateOne) *ent.CarUpdateOne {
 
 type CarRepositoryPSQL struct {
 	client *ent.CarClient
-}
-
-func NewEntClientPSQL(user, password, host, port, dbname string) (*ent.Client, error) {
-	databaseURL := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", user, password, host, port, dbname)
-	db, err := dbsql.Open("pgx", databaseURL)
-	if err != nil {
-		return nil, err
-	}
-	drv := entsql.OpenDB(dialect.Postgres, db)
-	return ent.NewClient(ent.Driver(drv)), nil
 }
 
 func NewCarRepositoryPSQL(carClient *ent.CarClient) *CarRepositoryPSQL {
