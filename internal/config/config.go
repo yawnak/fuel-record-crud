@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/gookit/config/v2"
@@ -35,4 +36,12 @@ func BindConfig(conf any, paths ...string) error {
 
 	err = config.Decode(conf)
 	return err
+}
+
+func MustGetEnv(key string) string {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		panic(fmt.Sprintf("env variable %s not found", key))
+	}
+	return val
 }
