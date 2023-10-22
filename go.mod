@@ -9,17 +9,28 @@ require (
 
 require (
 	ariga.io/atlas v0.14.1-0.20230918065911-83ad451a4935 // indirect
-	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
+	github.com/fatih/color v1.14.1 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
+	github.com/goccy/go-yaml v1.11.2 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/gookit/color v1.5.4 // indirect
+	github.com/gookit/config/v2 v2.2.4 // indirect
+	github.com/gookit/goutil v0.6.14 // indirect
+	github.com/hashicorp/hcl/v2 v2.18.1 // indirect
+	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
-	github.com/zclconf/go-cty v1.8.0 // indirect
-	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/zclconf/go-cty v1.13.0 // indirect
+	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561 // indirect
 	golang.org/x/mod v0.10.0 // indirect
+	golang.org/x/sync v0.4.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 )
 
 require (

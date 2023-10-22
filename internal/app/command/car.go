@@ -6,16 +6,16 @@ import (
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 )
 
-type Car struct {
-	Create *CreateCarHandler
+type Vehicle struct {
+	Create *CreateVehicleHandler
 }
 
-type CarModel interface {
+type VehicleModel interface {
 	CarCreateModel
 }
 
-func NewCarCommand(model CarModel) *Car {
-	return &Car{
+func NewCarCommand(model VehicleModel) *Vehicle {
+	return &Vehicle{
 		Create: NewCreateCar(model),
 	}
 }
@@ -24,16 +24,16 @@ type CarCreateModel interface {
 	CreateCar(context.Context, car.Car) (car.Car, error)
 }
 
-type CreateCarHandler struct {
+type CreateVehicleHandler struct {
 	carCreateModel CarCreateModel
 }
 
-func NewCreateCar(createModel CarCreateModel) *CreateCarHandler {
-	return &CreateCarHandler{
+func NewCreateCar(createModel CarCreateModel) *CreateVehicleHandler {
+	return &CreateVehicleHandler{
 		carCreateModel: createModel,
 	}
 }
 
-func (c *CreateCarHandler) Handle(ctx context.Context, car car.Car) (car.Car, error) {
+func (c *CreateVehicleHandler) Handle(ctx context.Context, car car.Car) (car.Car, error) {
 	return c.carCreateModel.CreateCar(ctx, car)
 }

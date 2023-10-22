@@ -44,16 +44,20 @@ type CarRepositoryPSQL struct {
 	client *ent.CarClient
 }
 
-func NewCarRepositoryPSQL(user, password, host, port, dbname string) (*CarRepositoryPSQL, error) {
+func NewEntClientPSQL(user, password, host, port, dbname string) (*ent.Client, error) {
 	databaseURL := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", user, password, host, port, dbname)
-
 	db, err := dbsql.Open("pgx", databaseURL)
 	if err != nil {
 		return nil, err
 	}
 	drv := entsql.OpenDB(dialect.Postgres, db)
-	client := ent.NewClient(ent.Driver(drv)).Car
-	return &CarRepositoryPSQL{client: client}, nil
+	return ent.NewClient(ent.Driver(drv)), nil
+}
+
+func NewCarRepositoryPSQL(carClient *ent.CarClient) *CarRepositoryPSQL {
+	return &CarRepositoryPSQL{
+		client: carClient,
+	}
 }
 
 func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c car.Car) (car.Car, error) {
