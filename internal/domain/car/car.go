@@ -12,7 +12,7 @@ type Car struct {
 	//currentOdometerRecord History[*OdometerRecord]
 }
 
-func New(make, model string, year int32, currentFuel float64) Car {
+func New(make, model string, year int32) Car {
 	return Car{
 		id:    uuid.New(),
 		make:  make,
@@ -31,4 +31,8 @@ func UnmarshalCarFromDatabase(
 		model: model,
 		year:  year,
 	}
+}
+
+func (Car) Validate() error {
+	return nil
 }

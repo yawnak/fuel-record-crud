@@ -76,7 +76,8 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/yawnak/fuel-record-crud/ent/runtime"
 var (
-	Hooks [1]ent.Hook
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// CurrentFuelLitersValidator is a validator for the "current_fuel_liters" field. It is called by the builders before save.
 	CurrentFuelLitersValidator func(float64) error
 )

@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -433,6 +434,12 @@ func (frq *FuelRecordQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		frq.sql = prev
+	}
+	if fuelrecord.Policy == nil {
+		return errors.New("ent: uninitialized fuelrecord.Policy (forgotten import ent/runtime?)")
+	}
+	if err := fuelrecord.Policy.EvalQuery(ctx, frq); err != nil {
+		return err
 	}
 	return nil
 }

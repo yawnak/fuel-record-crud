@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	if err := entc.Generate("./schema", &gen.Config{}); err != nil {
+	features := entc.FeatureNames("privacy")
+	if err := entc.Generate("./schema", &gen.Config{}, features); err != nil {
 		log.Fatal("running ent codegen:", err)
 	}
 }

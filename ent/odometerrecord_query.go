@@ -25,8 +25,8 @@ type OdometerRecordQuery struct {
 	inters     []Interceptor
 	predicates []predicate.OdometerRecord
 	withCar    *CarQuery
-	withPrev   *OdometerRecordQuery
 	withNext   *OdometerRecordQuery
+	withPrev   *OdometerRecordQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -85,28 +85,6 @@ func (orq *OdometerRecordQuery) QueryCar() *CarQuery {
 	return query
 }
 
-// QueryPrev chains the current query on the "prev" edge.
-func (orq *OdometerRecordQuery) QueryPrev() *OdometerRecordQuery {
-	query := (&OdometerRecordClient{config: orq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := orq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, selector),
-			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, odometerrecord.PrevTable, odometerrecord.PrevColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryNext chains the current query on the "next" edge.
 func (orq *OdometerRecordQuery) QueryNext() *OdometerRecordQuery {
 	query := (&OdometerRecordClient{config: orq.config}).Query()
@@ -121,7 +99,29 @@ func (orq *OdometerRecordQuery) QueryNext() *OdometerRecordQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, selector),
 			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, odometerrecord.NextTable, odometerrecord.NextColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, odometerrecord.NextTable, odometerrecord.NextColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPrev chains the current query on the "prev" edge.
+func (orq *OdometerRecordQuery) QueryPrev() *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(odometerrecord.Table, odometerrecord.FieldID, selector),
+			sqlgraph.To(odometerrecord.Table, odometerrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, odometerrecord.PrevTable, odometerrecord.PrevColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
 		return fromU, nil
@@ -322,8 +322,8 @@ func (orq *OdometerRecordQuery) Clone() *OdometerRecordQuery {
 		inters:     append([]Interceptor{}, orq.inters...),
 		predicates: append([]predicate.OdometerRecord{}, orq.predicates...),
 		withCar:    orq.withCar.Clone(),
-		withPrev:   orq.withPrev.Clone(),
 		withNext:   orq.withNext.Clone(),
+		withPrev:   orq.withPrev.Clone(),
 		// clone intermediate query.
 		sql:  orq.sql.Clone(),
 		path: orq.path,
@@ -341,17 +341,6 @@ func (orq *OdometerRecordQuery) WithCar(opts ...func(*CarQuery)) *OdometerRecord
 	return orq
 }
 
-// WithPrev tells the query-builder to eager-load the nodes that are connected to
-// the "prev" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OdometerRecordQuery) WithPrev(opts ...func(*OdometerRecordQuery)) *OdometerRecordQuery {
-	query := (&OdometerRecordClient{config: orq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	orq.withPrev = query
-	return orq
-}
-
 // WithNext tells the query-builder to eager-load the nodes that are connected to
 // the "next" edge. The optional arguments are used to configure the query builder of the edge.
 func (orq *OdometerRecordQuery) WithNext(opts ...func(*OdometerRecordQuery)) *OdometerRecordQuery {
@@ -360,6 +349,17 @@ func (orq *OdometerRecordQuery) WithNext(opts ...func(*OdometerRecordQuery)) *Od
 		opt(query)
 	}
 	orq.withNext = query
+	return orq
+}
+
+// WithPrev tells the query-builder to eager-load the nodes that are connected to
+// the "prev" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OdometerRecordQuery) WithPrev(opts ...func(*OdometerRecordQuery)) *OdometerRecordQuery {
+	query := (&OdometerRecordClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withPrev = query
 	return orq
 }
 
@@ -443,8 +443,8 @@ func (orq *OdometerRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		_spec       = orq.querySpec()
 		loadedTypes = [3]bool{
 			orq.withCar != nil,
-			orq.withPrev != nil,
 			orq.withNext != nil,
+			orq.withPrev != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -471,15 +471,15 @@ func (orq *OdometerRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
-	if query := orq.withPrev; query != nil {
-		if err := orq.loadPrev(ctx, query, nodes, nil,
-			func(n *OdometerRecord, e *OdometerRecord) { n.Edges.Prev = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := orq.withNext; query != nil {
 		if err := orq.loadNext(ctx, query, nodes, nil,
 			func(n *OdometerRecord, e *OdometerRecord) { n.Edges.Next = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := orq.withPrev; query != nil {
+		if err := orq.loadPrev(ctx, query, nodes, nil,
+			func(n *OdometerRecord, e *OdometerRecord) { n.Edges.Prev = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -515,7 +515,7 @@ func (orq *OdometerRecordQuery) loadCar(ctx context.Context, query *CarQuery, no
 	}
 	return nil
 }
-func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRecordQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *OdometerRecord)) error {
+func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRecordQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *OdometerRecord)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OdometerRecord)
 	for i := range nodes {
@@ -544,7 +544,7 @@ func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRec
 	}
 	return nil
 }
-func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRecordQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *OdometerRecord)) error {
+func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRecordQuery, nodes []*OdometerRecord, init func(*OdometerRecord), assign func(*OdometerRecord, *OdometerRecord)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OdometerRecord)
 	for i := range nodes {
@@ -555,7 +555,7 @@ func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRec
 		query.ctx.AppendFieldOnce(odometerrecord.FieldNextOdometerRecordID)
 	}
 	query.Where(predicate.OdometerRecord(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(odometerrecord.NextColumn), fks...))
+		s.Where(sql.InValues(s.C(odometerrecord.PrevColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -600,7 +600,7 @@ func (orq *OdometerRecordQuery) querySpec() *sqlgraph.QuerySpec {
 		if orq.withCar != nil {
 			_spec.Node.AddColumnOnce(odometerrecord.FieldCarID)
 		}
-		if orq.withPrev != nil {
+		if orq.withNext != nil {
 			_spec.Node.AddColumnOnce(odometerrecord.FieldNextOdometerRecordID)
 		}
 	}

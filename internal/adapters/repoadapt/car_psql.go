@@ -60,7 +60,7 @@ func (repo *CarRepositoryPSQL) GetCar(ctx context.Context, id uuid.UUID) (car.Ca
 	return EntCarToCar(getCar), nil
 }
 
-func (repo *CarRepositoryPSQL) QueryCars(ctx context.Context, id uuid.UUID) ([]car.Car, error) {
+func (repo *CarRepositoryPSQL) QueryCars(ctx context.Context) ([]car.Car, error) {
 	getCars, err := repo.client.Query().All(ctx)
 	if err != nil {
 		return nil, err

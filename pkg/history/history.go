@@ -6,24 +6,24 @@ import (
 	"github.com/samber/lo"
 )
 
-type Historable[T any] interface {
+type Historable[T any, Event any] interface {
 	comparable
-	NewNext() (T, error)
+	NewNext(Event) (T, error)
 	IsFirst() bool
 	IsLast() bool
 }
 
-type History[H Historable[H]] struct {
+type History[H Historable[H, Event], Event any] struct {
 	list []H
 }
 
-func NewHistory[H Historable[H]](record H) *History[H] {
-	return &History[H]{
+func NewHistory[H Historable[H, Event], Event any](record H) History[H, Event] {
+	return History[H, Event]{
 		list: []H{record},
 	}
 }
 
-func (history *History[H]) AddRecord() error {
+func (history *History[H, E]) AddRecord(event E) error {
 	head, err := lo.Last(history.list)
 	if err != nil || lo.IsEmpty(head) {
 		return ErrHistoryEmpty
@@ -31,7 +31,7 @@ func (history *History[H]) AddRecord() error {
 	if !head.IsLast() {
 		return ErrHeadIsNotLast
 	}
-	newHead, err := head.NewNext()
+	newHead, err := head.NewNext(event)
 	if err != nil {
 		return fmt.Errorf("error in head.NewNext: %w", err)
 	}
@@ -41,7 +41,7 @@ func (history *History[H]) AddRecord() error {
 	return nil
 }
 
-func (history *History[H]) IsComplete() bool {
+func (history *History[H, E]) IsComplete() bool {
 	return len(history.list) > 0 &&
 		history.list[0].IsFirst() &&
 		history.list[len(history.list)-1].IsLast()

@@ -1,9 +1,14 @@
 package event
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrNegativeLiters = errors.New("fuel gauge can't have negative liters")
 )
 
 type FuelGaugeChange struct {
@@ -13,12 +18,15 @@ type FuelGaugeChange struct {
 	createdAt         time.Time
 }
 
-func NewFuelGaugeChange(differenceLiters, currentFuelLiters float64) FuelGaugeChange {
+func NewFuelGaugeChange(differenceLiters, currentFuelLiters float64) (FuelGaugeChange, error) {
+	if currentFuelLiters < 0 {
+		return FuelGaugeChange{}, ErrNegativeLiters
+	}
 	return FuelGaugeChange{
 		id:                uuid.New(),
 		currentFuelLiters: currentFuelLiters,
 		createdAt:         time.Now().UTC(),
-	}
+	}, nil
 }
 
 func (event FuelGaugeChange) Id() uuid.UUID {

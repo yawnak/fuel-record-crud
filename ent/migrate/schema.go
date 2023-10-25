@@ -72,7 +72,7 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "odometer_records_odometer_records_next",
+				Symbol:     "odometer_records_odometer_records_prev",
 				Columns:    []*schema.Column{OdometerRecordsColumns[5]},
 				RefColumns: []*schema.Column{OdometerRecordsColumns[0]},
 				OnDelete:   schema.SetNull,

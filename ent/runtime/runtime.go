@@ -3,10 +3,15 @@
 package runtime
 
 import (
+	"context"
+
 	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 	"github.com/yawnak/fuel-record-crud/ent/schema"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -23,8 +28,15 @@ func init() {
 	carDescModel := carFields[2].Descriptor()
 	// car.ModelValidator is a validator for the "model" field. It is called by the builders before save.
 	car.ModelValidator = carDescModel.Validators[0].(func(string) error)
-	fuelrecordHooks := schema.FuelRecord{}.Hooks()
-	fuelrecord.Hooks[0] = fuelrecordHooks[0]
+	fuelrecord.Policy = privacy.NewPolicies(schema.FuelRecord{})
+	fuelrecord.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := fuelrecord.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
 	fuelrecordFields := schema.FuelRecord{}.Fields()
 	_ = fuelrecordFields
 	// fuelrecordDescCurrentFuelLiters is the schema descriptor for current_fuel_liters field.

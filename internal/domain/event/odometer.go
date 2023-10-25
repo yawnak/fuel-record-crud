@@ -29,3 +29,7 @@ func NewOdometerIncrease(differenceKilometers, currentKilometers float64) (Odome
 		createdAt:            time.Now().UTC(),
 	}, nil
 }
+
+func (event OdometerIncrease) Id() uuid.UUID {
+	return event.id
+}

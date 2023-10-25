@@ -5,7 +5,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/yawnak/fuel-record-crud/ent/schema/hooks"
+	"github.com/yawnak/fuel-record-crud/ent/privacy"
+	"github.com/yawnak/fuel-record-crud/ent/schema/rules"
 )
 
 // FuelRecord holds the schema definition for the FuelRecord entity.
@@ -35,8 +36,17 @@ func (FuelRecord) Edges() []ent.Edge {
 	}
 }
 
-func (FuelRecord) Hooks() []ent.Hook {
-	return []ent.Hook{
-		hooks.FuelRecord.ForbidSetNext(ErrSetNextIsForbidden),
+// func (FuelRecord) Hooks() []ent.Hook {
+// 	return []ent.Hook{
+// 		hooks.FuelRecord.ForbidSetNext(ErrSetNextIsForbidden),
+// 	}
+// }
+
+func (FuelRecord) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rules.DenyDelete(ErrDeleteIsForbidden),
+			rules.FuelRecord.DenySetNext(ErrSetNextIsForbidden),
+		},
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/yawnak/fuel-record-crud/internal/common/httperr"
-	"github.com/yawnak/fuel-record-crud/internal/domain/view"
+	"github.com/yawnak/fuel-record-crud/internal/domain/record"
 )
 
 var (
@@ -13,14 +13,14 @@ var (
 )
 
 func adaptErrNextRecordAlreadyExists(err error) *httperr.SError {
-	if !errors.Is(err, view.ErrFuelGaugeRecordNotLast) {
+	if !errors.Is(err, record.ErrFuelGaugeRecordNotLast) {
 		return nil
 	}
 	return &httperr.SError{
 		Code:           http.StatusConflict,
 		ErrType:        TypeCreateRecordConflict,
 		DisplayMessage: "next record already exists",
-		Err:            view.ErrFuelGaugeRecordNotLast,
+		Err:            record.ErrFuelGaugeRecordNotLast,
 	}
 }
 

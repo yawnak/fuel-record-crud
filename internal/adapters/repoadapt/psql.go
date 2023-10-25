@@ -27,20 +27,20 @@ func NewClientPSQL(user, password, host, port, dbname string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) CarRepository() *CarRepositoryPSQL {
+func (c *Client) CarRepo() *CarRepositoryPSQL {
 	return &CarRepositoryPSQL{
 		client: c.cl.Car,
 	}
 }
 
-func (c *Client) FuelRecordRepository() *FuelRecordRepositoryPSQL {
-	return &FuelRecordRepositoryPSQL{
+func (c *Client) FuelGaugeChangeRepo() *FuelRecordRepoPSQL {
+	return &FuelRecordRepoPSQL{
 		client: c.cl.FuelRecord,
 	}
 }
 
-func (c *Client) OdometerRecordRepository() *OdometerRecordRepositoryPSQL {
-	return &OdometerRecordRepositoryPSQL{
+func (c *Client) OdometerIncreaseRepo() *OdometerRecordRepoPSQL {
+	return &OdometerRecordRepoPSQL{
 		client: c.cl.OdometerRecord,
 	}
 }
@@ -59,20 +59,28 @@ type Tx struct {
 	tx *ent.Tx
 }
 
-func (t *Tx) CarRepository() *CarRepositoryPSQL {
+func (t *Tx) Commit() error {
+	return t.tx.Commit()
+}
+
+func (t *Tx) Rollback() error {
+	return t.tx.Rollback()
+}
+
+func (t *Tx) CarRepo() *CarRepositoryPSQL {
 	return &CarRepositoryPSQL{
 		client: t.tx.Car,
 	}
 }
 
-func (t *Tx) FuelRecordRepository() *FuelRecordRepositoryPSQL {
-	return &FuelRecordRepositoryPSQL{
+func (t *Tx) FuelGaugeChangeRepo() *FuelRecordRepoPSQL {
+	return &FuelRecordRepoPSQL{
 		client: t.tx.FuelRecord,
 	}
 }
 
-func (t *Tx) OdometerRecordRepository() *OdometerRecordRepositoryPSQL {
-	return &OdometerRecordRepositoryPSQL{
+func (t *Tx) OdometerIncreaseRepo() *OdometerRecordRepoPSQL {
+	return &OdometerRecordRepoPSQL{
 		client: t.tx.OdometerRecord,
 	}
 }

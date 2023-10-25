@@ -1,41 +1,47 @@
-package view
+package record
 
 import (
 	"errors"
 
 	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/internal/domain/event"
-	"github.com/yawnak/fuel-record-crud/pkg/history"
 )
 
 var (
 	ErrFuelGaugeRecordNotLast = errors.New("fuel gauge record not last")
 )
 
-type FuelGaugeRecord struct {
+type FuelGauge struct {
 	event       event.FuelGaugeChange
 	nextEventId uuid.NullUUID
 	prevEventId uuid.NullUUID
 }
 
-func (record FuelGaugeRecord) IsFirst() bool {
+func NewFirstFuelGauge(initFuel float64) (FuelGauge, error) {
+	eve, err := event.NewFuelGaugeChange(0, initFuel)
+	return FuelGauge{
+		event: eve,
+	}, err
+}
+
+func (record FuelGauge) IsFirst() bool {
 	return !record.prevEventId.Valid
 }
 
-func (record FuelGaugeRecord) IsLast() bool {
+func (record FuelGauge) IsLast() bool {
 	return !record.nextEventId.Valid
 }
 
-func (record *FuelGaugeRecord) NewNext() (*FuelGaugeRecord, error) {
+func (record *FuelGauge) NewNext(event event.FuelGaugeChange) (*FuelGauge, error) {
 	if record.IsLast() {
 		return nil, ErrFuelGaugeRecordNotLast
 	}
-	return &FuelGaugeRecord{
-		event:       event.FuelGaugeChange{},
+	return &FuelGauge{
+		event:       event,
 		prevEventId: uuid.NullUUID{UUID: record.event.Id(), Valid: true},
 	}, nil
 }
 
-type FuelGauge struct {
-	historyView history.History[*FuelGaugeRecord]
+func (record FuelGauge) Validate() error {
+	return nil
 }

@@ -54,5 +54,6 @@ func (w *HTTPWrapper) CreateCar(c echo.Context) error {
 		return err
 	}
 
-	w.app.Commands.Car.Create.Handle(c.Request().Context(), )
+	//w.app.Commands.Car.Create.Handle(c.Request().Context(), )
+	return nil
 }
