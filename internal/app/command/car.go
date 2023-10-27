@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 	"github.com/yawnak/fuel-record-crud/internal/domain/vehicle"
@@ -28,8 +29,8 @@ type CarCreateModel interface {
 type VehicleCreateService interface {
 	CreateVehicle(ctx context.Context,
 		model, make string, year int32,
-		initFuel *float64,
-		initOdometer *float64,
+		initFuel *float64, fuelCreationTime time.Time,
+		initOdometer *float64, odometerCreationTime time.Time,
 	) (vehicle.Vehicle, error)
 }
 

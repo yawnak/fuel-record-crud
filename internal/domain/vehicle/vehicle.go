@@ -1,6 +1,8 @@
 package vehicle
 
 import (
+	"time"
+
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 	"github.com/yawnak/fuel-record-crud/internal/domain/event"
 	"github.com/yawnak/fuel-record-crud/internal/domain/record"
@@ -8,8 +10,12 @@ import (
 )
 
 type (
-	FuelGaugeHistory history.History[*record.FuelGauge, event.FuelGaugeChange]
-	OdometerHistory  history.History[*record.Odometer, event.OdometerIncrease]
+	FuelGaugeHistory struct {
+		history.History[*record.FuelGauge, event.FuelGaugeChange]
+	}
+	OdometerHistory struct {
+		history.History[*record.Odometer, event.OdometerIncrease]
+	}
 )
 
 type Vehicle struct {
@@ -18,30 +24,43 @@ type Vehicle struct {
 	odometerHistoryView OdometerHistory
 }
 
-func NewVehicle(cr car.Car, firstFuelRecord *record.FuelGauge, firstOdometerRecord *record.Odometer) (Vehicle, error) {
-	if err := cr.Validate(); err != nil {
-		return Vehicle{}, err
-	}
-	vh := Vehicle{
-		cr: cr,
-	}
-	if firstFuelRecord != nil {
-		if err := firstFuelRecord.Validate(); err != nil {
+func NewVehicle(
+	model, make string, year int32,
+	initFuel *float64, fuelCreationTime time.Time,
+	initOdometer *float64, odometerCreationTime time.Time,
+) (Vehicle, error) {
+
+	vh := Vehicle{}
+	cr := car.New(model, make, year)
+	vh.cr = cr
+
+	if initFuel != nil {
+		rec, err := record.NewFirstFuelGauge(*initFuel, fuelCreationTime)
+		if err != nil {
 			return Vehicle{}, err
 		}
-		vh.fuelHistoryView = FuelGaugeHistory(history.NewHistory[*record.FuelGauge](firstFuelRecord))
+		vh.fuelHistoryView = FuelGaugeHistory{history.NewHistory(&rec)}
 	}
 
-	if firstOdometerRecord != nil {
-		if err := firstOdometerRecord.Validate(); err != nil {
+	if initOdometer != nil {
+		rec, err := record.NewFirstOdometer(*initOdometer, odometerCreationTime)
+		if err != nil {
 			return Vehicle{}, err
 		}
-		vh.odometerHistoryView = OdometerHistory(history.NewHistory[*record.Odometer](firstOdometerRecord))
+		vh.odometerHistoryView = OdometerHistory{history.NewHistory(&rec)}
 	}
 
 	return vh, nil
 }
 
-func (vh Vehicle) Car() car.Car {
-	return vh.cr
+func (vh *Vehicle) Car() *car.Car {
+	return &vh.cr
+}
+
+func (vh *Vehicle) FuelHistory() *FuelGaugeHistory {
+	return &vh.fuelHistoryView
+}
+
+func (vh *Vehicle) OdometerHistory() *OdometerHistory {
+	return &vh.odometerHistoryView
 }

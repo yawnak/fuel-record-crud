@@ -1,8 +1,10 @@
-package vehicles
+package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/yawnak/fuel-record-crud/internal/domain"
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
@@ -25,11 +27,11 @@ type VehicleRepo[
 	TX VehicleTx[CR, FR],
 ] interface {
 	CarRepo() CR
-	FuelGaugeChangeRepo() FR
 	BeginTx(context.Context) (TX, error)
 }
 
-type VehicleService[CR car.CarRepo,
+type VehicleService[
+	CR car.CarRepo,
 	FR record.FuelGaugeRepo,
 	TX VehicleTx[CR, FR],
 ] struct {
@@ -37,40 +39,26 @@ type VehicleService[CR car.CarRepo,
 }
 
 func NewVehicleService[
-	CR car.CarRepo, FR record.FuelGaugeRepo, TX VehicleTx[CR, FR],
-](vehicleRepo VehicleRepo[CR, FR, TX]) *VehicleService[CR, FR, TX] {
+	CR car.CarRepo,
+	FR record.FuelGaugeRepo,
+	TX VehicleTx[CR, FR],
+](vehicleRepo VehicleRepo[CR, FR, TX],
+) *VehicleService[CR, FR, TX] {
+	// === Function start === //
 	return &VehicleService[CR, FR, TX]{repo: vehicleRepo}
 }
 
 func (s *VehicleService[CR, FR, TX]) CreateVehicle(
 	ctx context.Context, model, make string, year int32,
-	initFuel *float64,
-	initOdometer *float64,
+	initFuel *float64, fuelCreationTime time.Time,
+	initOdometer *float64, odometerCreationTime time.Time,
 ) (vehicle.Vehicle, error) {
-	var err error
-	newCar := car.New(make, model, year)
-	if err := newCar.Validate(); err != nil {
-		return vehicle.Vehicle{}, fmt.Errorf("failed to validate car: %w", err)
-	}
-	var fuelGaugeRecord *record.FuelGauge
-	if initFuel != nil {
-		var temp record.FuelGauge
-		if temp, err = record.NewFirstFuelGauge(*initFuel); err != nil {
-			return vehicle.Vehicle{}, fmt.Errorf("failed to create fuel gauge record: %w", err)
-		}
-		fuelGaugeRecord = &temp
-	}
+	///////////////////////////
+	vh, err := vehicle.NewVehicle(
+		model, make, year,
+		initFuel, fuelCreationTime,
+		initOdometer, odometerCreationTime)
 
-	var odometerRecord *record.Odometer
-	if initOdometer != nil {
-		var temp record.Odometer
-		if temp, err = record.NewFirstOdometer(*initOdometer); err != nil {
-			return vehicle.Vehicle{}, fmt.Errorf("failed to create odometer record: %w", err)
-		}
-		odometerRecord = &temp
-	}
-
-	vh, err := vehicle.NewVehicle(newCar, fuelGaugeRecord, odometerRecord)
 	if err != nil {
 		return vehicle.Vehicle{}, fmt.Errorf("failed to create vehicle: %w", err)
 	}
@@ -80,8 +68,21 @@ func (s *VehicleService[CR, FR, TX]) CreateVehicle(
 		return vehicle.Vehicle{}, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	if _, err := tx.CarRepo().CreateCar(ctx, vh.Car()); err != nil {
+	err = tx.FuelGaugeChangeRepo().CarHasFuelRecords(ctx, vh.Car().Id())
+	switch {
+	case err == nil:
+		return vehicle.Vehicle{}, record.ErrCarHasFuelGaugeRecords
+	case errors.Is(err, record.ErrCarHasNoFuelGaugeRecords):
+	default:
+		return vehicle.Vehicle{}, fmt.Errorf("failed to check if car has fuel records: %w", err)
+	}
+
+	if err := tx.CarRepo().CreateCar(ctx, vh.Car()); err != nil {
 		return vehicle.Vehicle{}, fmt.Errorf("failed to create car: %w", err)
+	}
+
+	if err := tx.FuelGaugeChangeRepo().CreateFuelGaugeRecord(ctx, vh.Car().Id(), vh.FuelHistory().Head()); err != nil {
+		return vehicle.Vehicle{}, fmt.Errorf("failed to create fuel gauge record: %w", err)
 	}
 
 	err = tx.Commit()

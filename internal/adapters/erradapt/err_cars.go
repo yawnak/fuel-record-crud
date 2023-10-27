@@ -13,14 +13,14 @@ var (
 )
 
 func adaptErrNextRecordAlreadyExists(err error) *httperr.SError {
-	if !errors.Is(err, record.ErrFuelGaugeRecordNotLast) {
+	if !errors.Is(err, record.ErrRecordNotLast) {
 		return nil
 	}
 	return &httperr.SError{
 		Code:           http.StatusConflict,
 		ErrType:        TypeCreateRecordConflict,
 		DisplayMessage: "next record already exists",
-		Err:            record.ErrFuelGaugeRecordNotLast,
+		Err:            err,
 	}
 }
 

@@ -3,8 +3,8 @@ package hooks
 import (
 	"context"
 
+	"entgo.io/ent"
 	"github.com/samber/lo"
-	"github.com/yawnak/fuel-record-crud/ent"
 	"github.com/yawnak/fuel-record-crud/ent/hook"
 )
 

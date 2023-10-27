@@ -18,7 +18,7 @@ type OdometerIncrease struct {
 	createdAt            time.Time
 }
 
-func NewOdometerIncrease(differenceKilometers, currentKilometers float64) (OdometerIncrease, error) {
+func NewOdometerIncrease(differenceKilometers, currentKilometers float64, creationTime time.Time) (OdometerIncrease, error) {
 	if differenceKilometers < 0 {
 		return OdometerIncrease{}, ErrOdometerNegativeDifference
 	}
@@ -26,10 +26,22 @@ func NewOdometerIncrease(differenceKilometers, currentKilometers float64) (Odome
 		id:                   uuid.New(),
 		currentKilometers:    currentKilometers,
 		differenceKilometers: differenceKilometers,
-		createdAt:            time.Now().UTC(),
+		createdAt:            creationTime,
 	}, nil
 }
 
 func (event OdometerIncrease) Id() uuid.UUID {
 	return event.id
+}
+
+func (event OdometerIncrease) CurrentKilometers() float64 {
+	return event.currentKilometers
+}
+
+func (event OdometerIncrease) DifferenceKilometers() float64 {
+	return event.differenceKilometers
+}
+
+func (event OdometerIncrease) CreatedAt() time.Time {
+	return event.createdAt
 }

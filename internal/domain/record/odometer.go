@@ -1,6 +1,8 @@
 package record
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/internal/domain/event"
 )
@@ -11,8 +13,8 @@ type Odometer struct {
 	prevEventId uuid.NullUUID
 }
 
-func NewFirstOdometer(initOdometer float64) (Odometer, error) {
-	odom, err := event.NewOdometerIncrease(0, initOdometer)
+func NewFirstOdometer(initOdometer float64, creationTime time.Time) (Odometer, error) {
+	odom, err := event.NewOdometerIncrease(0, initOdometer, creationTime)
 	return Odometer{
 		event: odom,
 	}, err
@@ -28,7 +30,10 @@ func (record Odometer) IsLast() bool {
 
 func (record *Odometer) NewNext(event event.OdometerIncrease) (*Odometer, error) {
 	if record.IsLast() {
-		return nil, ErrFuelGaugeRecordNotLast
+		return nil, ErrRecordNotLast
+	}
+	if !record.event.CreatedAt().After(event.CreatedAt()) {
+		return nil, ErrNewNextIsEarlierThenLast
 	}
 	return &Odometer{
 		event:       event,

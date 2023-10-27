@@ -8,7 +8,7 @@ import (
 
 type Historable[T any, Event any] interface {
 	comparable
-	NewNext(Event) (T, error)
+	NewNext(e Event) (T, error)
 	IsFirst() bool
 	IsLast() bool
 }
@@ -45,4 +45,11 @@ func (history *History[H, E]) IsComplete() bool {
 	return len(history.list) > 0 &&
 		history.list[0].IsFirst() &&
 		history.list[len(history.list)-1].IsLast()
+}
+
+func (history *History[H, E]) Head() H {
+	if len(history.list) == 0 {
+		return *new(H)
+	}
+	return history.list[len(history.list)-1]
 }

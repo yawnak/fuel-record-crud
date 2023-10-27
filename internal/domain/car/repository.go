@@ -7,7 +7,7 @@ import (
 )
 
 type CarRepo interface {
-	CreateCar(ctx context.Context, car Car) (Car, error)
+	CreateCar(ctx context.Context, car *Car) error
 	GetCar(ctx context.Context, id uuid.UUID) (Car, error)
 	QueryCars(ctx context.Context) ([]Car, error)
 	//Update(ctx context.Context, updateFunc func(*Car)) (Car, error)

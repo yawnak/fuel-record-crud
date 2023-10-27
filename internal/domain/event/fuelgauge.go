@@ -18,14 +18,14 @@ type FuelGaugeChange struct {
 	createdAt         time.Time
 }
 
-func NewFuelGaugeChange(differenceLiters, currentFuelLiters float64) (FuelGaugeChange, error) {
+func NewFuelGaugeChange(differenceLiters, currentFuelLiters float64, creationTime time.Time) (FuelGaugeChange, error) {
 	if currentFuelLiters < 0 {
 		return FuelGaugeChange{}, ErrNegativeLiters
 	}
 	return FuelGaugeChange{
 		id:                uuid.New(),
 		currentFuelLiters: currentFuelLiters,
-		createdAt:         time.Now().UTC(),
+		createdAt:         creationTime,
 	}, nil
 }
 
@@ -41,6 +41,6 @@ func (event FuelGaugeChange) DifferenceLiters() float64 {
 	return event.differenceLiters
 }
 
-func (event FuelGaugeChange) CreatedAt() string {
-	return event.createdAt.Format("2006-01-02 15:04:05")
+func (event FuelGaugeChange) CreatedAt() time.Time {
+	return event.createdAt
 }

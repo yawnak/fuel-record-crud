@@ -19,7 +19,7 @@ func EntCarToCar(entCar *ent.Car) car.Car {
 	)
 }
 
-func CarToCreate(c car.Car, carCreator *ent.CarCreate) *ent.CarCreate {
+func CarToCreate(c *car.Car, carCreator *ent.CarCreate) *ent.CarCreate {
 	return carCreator.
 		SetID(c.Id()).
 		SetMake(c.Make()).
@@ -27,7 +27,7 @@ func CarToCreate(c car.Car, carCreator *ent.CarCreate) *ent.CarCreate {
 		SetYear(c.Year())
 }
 
-func CarToUpdateOne(c car.Car, carUpdater *ent.CarUpdateOne) *ent.CarUpdateOne {
+func CarToUpdateOne(c *car.Car, carUpdater *ent.CarUpdateOne) *ent.CarUpdateOne {
 	return carUpdater.
 		SetMake(c.Make()).
 		SetModel(c.Model()).
@@ -44,12 +44,12 @@ func NewCarRepositoryPSQL(carClient *ent.CarClient) *CarRepositoryPSQL {
 	}
 }
 
-func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c car.Car) (car.Car, error) {
-	newCar, err := CarToCreate(c, repo.client.Create()).Save(ctx)
+func (repo *CarRepositoryPSQL) CreateCar(ctx context.Context, c *car.Car) error {
+	_, err := CarToCreate(c, repo.client.Create()).Save(ctx)
 	if err != nil {
-		return car.Car{}, err
+		return err
 	}
-	return EntCarToCar(newCar), nil
+	return nil
 }
 
 func (repo *CarRepositoryPSQL) GetCar(ctx context.Context, id uuid.UUID) (car.Car, error) {
@@ -70,7 +70,7 @@ func (repo *CarRepositoryPSQL) QueryCars(ctx context.Context) ([]car.Car, error)
 	}), nil
 }
 
-func (repo *CarRepositoryPSQL) UpdateCar(ctx context.Context, c car.Car) (car.Car, error) {
+func (repo *CarRepositoryPSQL) UpdateCar(ctx context.Context, c *car.Car) (car.Car, error) {
 	updatedCar, err := CarToUpdateOne(c, repo.client.UpdateOneID(c.Id())).Save(ctx)
 	if err != nil {
 		return car.Car{}, err
