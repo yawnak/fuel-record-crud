@@ -1012,7 +1012,7 @@ func (m *FuelRecordMutation) NextFuelRecordID() (r uuid.UUID, exists bool) {
 // OldNextFuelRecordID returns the old "next_fuel_record_id" field's value of the FuelRecord entity.
 // If the FuelRecord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FuelRecordMutation) OldNextFuelRecordID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *FuelRecordMutation) OldNextFuelRecordID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNextFuelRecordID is only allowed on UpdateOne operations")
 	}

@@ -4,24 +4,14 @@ import (
 	"time"
 
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
-	"github.com/yawnak/fuel-record-crud/internal/domain/event"
 	"github.com/yawnak/fuel-record-crud/internal/domain/record"
 	"github.com/yawnak/fuel-record-crud/pkg/history"
 )
 
-type (
-	FuelGaugeHistory struct {
-		history.History[*record.FuelGauge, event.FuelGaugeChange]
-	}
-	OdometerHistory struct {
-		history.History[*record.Odometer, event.OdometerIncrease]
-	}
-)
-
 type Vehicle struct {
 	cr                  car.Car
-	fuelHistoryView     FuelGaugeHistory
-	odometerHistoryView OdometerHistory
+	fuelHistoryView     record.FuelGaugeHistory
+	odometerHistoryView record.OdometerHistory
 }
 
 func NewVehicle(
@@ -39,7 +29,7 @@ func NewVehicle(
 		if err != nil {
 			return Vehicle{}, err
 		}
-		vh.fuelHistoryView = FuelGaugeHistory{history.NewHistory(&rec)}
+		vh.fuelHistoryView = record.FuelGaugeHistory{History: history.NewHistory(&rec)}
 	}
 
 	if initOdometer != nil {
@@ -47,20 +37,32 @@ func NewVehicle(
 		if err != nil {
 			return Vehicle{}, err
 		}
-		vh.odometerHistoryView = OdometerHistory{history.NewHistory(&rec)}
+		vh.odometerHistoryView = record.OdometerHistory{History: history.NewHistory(&rec)}
 	}
 
 	return vh, nil
+}
+
+func BuildVehicle(
+	cr car.Car,
+	fuelHistoryView record.FuelGaugeHistory,
+	odometerHistoryView record.OdometerHistory,
+) Vehicle {
+	return Vehicle{
+		cr:                  cr,
+		fuelHistoryView:     fuelHistoryView,
+		odometerHistoryView: odometerHistoryView,
+	}
 }
 
 func (vh *Vehicle) Car() *car.Car {
 	return &vh.cr
 }
 
-func (vh *Vehicle) FuelHistory() *FuelGaugeHistory {
+func (vh *Vehicle) FuelHistory() *record.FuelGaugeHistory {
 	return &vh.fuelHistoryView
 }
 
-func (vh *Vehicle) OdometerHistory() *OdometerHistory {
+func (vh *Vehicle) OdometerHistory() *record.OdometerHistory {
 	return &vh.odometerHistoryView
 }

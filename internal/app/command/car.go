@@ -31,7 +31,7 @@ type VehicleCreateService interface {
 		model, make string, year int32,
 		initFuel *float64, fuelCreationTime time.Time,
 		initOdometer *float64, odometerCreationTime time.Time,
-	) (vehicle.Vehicle, error)
+	) (*vehicle.Vehicle, error)
 }
 
 type CreateVehicle struct {

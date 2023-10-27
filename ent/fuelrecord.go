@@ -28,7 +28,7 @@ type FuelRecord struct {
 	// CarID holds the value of the "car_id" field.
 	CarID uuid.UUID `json:"car_id,omitempty"`
 	// NextFuelRecordID holds the value of the "next_fuel_record_id" field.
-	NextFuelRecordID uuid.UUID `json:"next_fuel_record_id,omitempty"`
+	NextFuelRecordID *uuid.UUID `json:"next_fuel_record_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FuelRecordQuery when eager-loading is set.
 	Edges        FuelRecordEdges `json:"edges"`
@@ -92,11 +92,13 @@ func (*FuelRecord) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case fuelrecord.FieldNextFuelRecordID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case fuelrecord.FieldCurrentFuelLiters, fuelrecord.FieldDifference:
 			values[i] = new(sql.NullFloat64)
 		case fuelrecord.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case fuelrecord.FieldID, fuelrecord.FieldCarID, fuelrecord.FieldNextFuelRecordID:
+		case fuelrecord.FieldID, fuelrecord.FieldCarID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -144,10 +146,11 @@ func (fr *FuelRecord) assignValues(columns []string, values []any) error {
 				fr.CarID = *value
 			}
 		case fuelrecord.FieldNextFuelRecordID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field next_fuel_record_id", values[i])
-			} else if value != nil {
-				fr.NextFuelRecordID = *value
+			} else if value.Valid {
+				fr.NextFuelRecordID = new(uuid.UUID)
+				*fr.NextFuelRecordID = *value.S.(*uuid.UUID)
 			}
 		default:
 			fr.selectValues.Set(columns[i], values[i])
@@ -212,8 +215,10 @@ func (fr *FuelRecord) String() string {
 	builder.WriteString("car_id=")
 	builder.WriteString(fmt.Sprintf("%v", fr.CarID))
 	builder.WriteString(", ")
-	builder.WriteString("next_fuel_record_id=")
-	builder.WriteString(fmt.Sprintf("%v", fr.NextFuelRecordID))
+	if v := fr.NextFuelRecordID; v != nil {
+		builder.WriteString("next_fuel_record_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

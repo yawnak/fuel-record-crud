@@ -8,9 +8,14 @@ import (
 
 type Historable[T any, Event any] interface {
 	comparable
+	Copier[T]
 	NewNext(e Event) (T, error)
 	IsFirst() bool
 	IsLast() bool
+}
+
+type Copier[T any] interface {
+	Copy() T
 }
 
 type History[H Historable[H, Event], Event any] struct {
@@ -20,6 +25,12 @@ type History[H Historable[H, Event], Event any] struct {
 func NewHistory[H Historable[H, Event], Event any](record H) History[H, Event] {
 	return History[H, Event]{
 		list: []H{record},
+	}
+}
+
+func UnmarshalHistory[H Historable[H, Event], Event any](list []H) History[H, Event] {
+	return History[H, Event]{
+		list: list,
 	}
 }
 
@@ -47,9 +58,10 @@ func (history *History[H, E]) IsComplete() bool {
 		history.list[len(history.list)-1].IsLast()
 }
 
+// returns a copy of the head record
 func (history *History[H, E]) Head() H {
 	if len(history.list) == 0 {
 		return *new(H)
 	}
-	return history.list[len(history.list)-1]
+	return history.list[len(history.list)-1].Copy()
 }

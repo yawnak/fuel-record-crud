@@ -241,7 +241,7 @@ func (frc *FuelRecordCreate) createSpec() (*FuelRecord, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.NextFuelRecordID = nodes[0]
+		_node.NextFuelRecordID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := frc.mutation.PrevIDs(); len(nodes) > 0 {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/internal/domain"
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 	"github.com/yawnak/fuel-record-crud/internal/domain/record"
@@ -52,7 +53,7 @@ func (s *VehicleService[CR, FR, TX]) CreateVehicle(
 	ctx context.Context, model, make string, year int32,
 	initFuel *float64, fuelCreationTime time.Time,
 	initOdometer *float64, odometerCreationTime time.Time,
-) (vehicle.Vehicle, error) {
+) (*vehicle.Vehicle, error) {
 	///////////////////////////
 	vh, err := vehicle.NewVehicle(
 		model, make, year,
@@ -60,35 +61,59 @@ func (s *VehicleService[CR, FR, TX]) CreateVehicle(
 		initOdometer, odometerCreationTime)
 
 	if err != nil {
-		return vehicle.Vehicle{}, fmt.Errorf("failed to create vehicle: %w", err)
+		return nil, fmt.Errorf("failed to create vehicle: %w", err)
 	}
 
 	tx, err := s.repo.BeginTx(ctx)
 	if err != nil {
-		return vehicle.Vehicle{}, fmt.Errorf("failed to begin transaction: %w", err)
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
 	err = tx.FuelGaugeChangeRepo().CarHasFuelRecords(ctx, vh.Car().Id())
 	switch {
 	case err == nil:
-		return vehicle.Vehicle{}, record.ErrCarHasFuelGaugeRecords
+		return nil, record.ErrCarHasFuelGaugeRecords
 	case errors.Is(err, record.ErrCarHasNoFuelGaugeRecords):
 	default:
-		return vehicle.Vehicle{}, fmt.Errorf("failed to check if car has fuel records: %w", err)
+		return nil, fmt.Errorf("failed to check if car has fuel records: %w", err)
 	}
 
 	if err := tx.CarRepo().CreateCar(ctx, vh.Car()); err != nil {
-		return vehicle.Vehicle{}, fmt.Errorf("failed to create car: %w", err)
+		return nil, fmt.Errorf("failed to create car: %w", err)
 	}
 
 	if err := tx.FuelGaugeChangeRepo().CreateFuelGaugeRecord(ctx, vh.Car().Id(), vh.FuelHistory().Head()); err != nil {
-		return vehicle.Vehicle{}, fmt.Errorf("failed to create fuel gauge record: %w", err)
+		return nil, fmt.Errorf("failed to create fuel gauge record: %w", err)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return vehicle.Vehicle{}, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return vehicle.Vehicle{}, nil
+	return &vh, nil
+}
+
+func (s *VehicleService[CR, FR, TX]) GetVehicle(ctx context.Context, carId uuid.UUID) (*vehicle.Vehicle, error) {
+	var err error
+	vh := vehicle.Vehicle{}
+
+	tx, err := s.repo.BeginTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	cr, err := tx.CarRepo().GetCar(ctx, carId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get car: %w", err)
+	}
+
+	fhist, err := tx.FuelGaugeChangeRepo().GetFuelHistory(ctx, carId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get fuel history: %w", err)
+	}
+
+	vh = vehicle.BuildVehicle(cr, fhist, record.OdometerHistory{})
+
+	return &vh, nil
 }

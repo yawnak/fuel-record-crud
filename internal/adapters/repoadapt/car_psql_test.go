@@ -20,6 +20,7 @@ import (
 	"github.com/yawnak/fuel-record-crud/ent"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 	_ "github.com/yawnak/fuel-record-crud/ent/runtime"
+	"github.com/yawnak/fuel-record-crud/internal/domain/event"
 	"github.com/yawnak/fuel-record-crud/internal/services"
 )
 
@@ -152,13 +153,42 @@ func TestService(t *testing.T) {
 	//fmt.Print("car creation:\n")
 	cl := &Client{cl: client}
 	serv := services.NewVehicleService(cl)
-	serv.CreateVehicle(ctx, "Shelby", "GT500", 2020, nil, time.Now(), nil, time.Now())
+	vh, err := serv.CreateVehicle(ctx, "Shelby", "GT500", 2020, lo.ToPtr(200.0), time.Now(), nil, time.Now())
+	if err != nil {
+		t.Fatal("error creating vehicle:", err)
+	}
+	fmt.Println("VH1:", vh.Car().Id(), vh.Car().Make(), vh.Car().Model(), vh.Car().Year())
 	cars, err := client.Car.Query().WithFuelRecords().All(ctx)
 	if err != nil {
 		t.Fatal("error querying cars:", err)
 	}
 	fmt.Println("CARS:")
 	PrintCars(cars)
+
+	vh2, err := serv.GetVehicle(ctx, vh.Car().Id())
+	if err != nil {
+		t.Fatal("error getting vehicle:", err)
+	}
+
+	fmt.Println("RETREIVED CAR:", vh2.Car())
+
+	head := vh2.FuelHistory().Head()
+	fmt.Println("HEAD:", head.Event().Id().String(), head.NextEventId().UUID.String(), head.PrevEventId().UUID.String())
+	newEvent, err := event.NewFuelGaugeChange(100.0, 300.0, head.CreatedAt().AddDate(0, 0, 1))
+	if err != nil {
+		t.Fatal("error creating new fuel gauge change:", err)
+	}
+	newRecord, err := head.NewNext(newEvent)
+	if err != nil {
+		t.Fatal("error creating new fuel gauge record:", err)
+	}
+	fmt.Println("NEW RECORD:",
+		newRecord.Event().Id().String(), newRecord.NextEventId().UUID.String(), newRecord.PrevEventId().UUID.String())
+	headAgain := vh2.FuelHistory().Head()
+	fmt.Println("OLD HEAD:",
+		head.Event().Id().String(), head.NextEventId().UUID.String(), head.PrevEventId().UUID.String())
+	fmt.Println("HEAD AGAIN:",
+		headAgain.Event().Id().String(), headAgain.NextEventId().UUID.String(), headAgain.PrevEventId().UUID.String())
 }
 
 func PrintCars(cars []*ent.Car) {

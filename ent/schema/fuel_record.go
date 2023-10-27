@@ -22,7 +22,7 @@ func (FuelRecord) Fields() []ent.Field {
 		field.Float("difference").Immutable(),
 		field.Time("created_at").Immutable(),
 		field.UUID("car_id", uuid.UUID{}).Immutable(),
-		field.UUID("next_fuel_record_id", uuid.UUID{}).Optional().Immutable(),
+		field.UUID("next_fuel_record_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 	}
 }
 

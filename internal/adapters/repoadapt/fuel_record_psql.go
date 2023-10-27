@@ -5,14 +5,31 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"github.com/yawnak/fuel-record-crud/ent"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
+	"github.com/yawnak/fuel-record-crud/internal/domain/event"
 	"github.com/yawnak/fuel-record-crud/internal/domain/record"
+	"github.com/yawnak/fuel-record-crud/pkg/history"
 )
 
 var (
 	ErrTxRequired = errors.New("transaction required")
 )
+
+func EntFuelRecordToFuelGauge(entFuelRecord *ent.FuelRecord) *record.FuelGauge {
+	eve := event.UnmarashalFuelGaugeChangeFromDB(
+		entFuelRecord.ID, entFuelRecord.CurrentFuelLiters,
+		entFuelRecord.Difference, entFuelRecord.CreatedAt)
+	var prevId, nextId uuid.NullUUID
+	if entFuelRecord.Edges.Prev != nil {
+		prevId = uuid.NullUUID{UUID: entFuelRecord.Edges.Prev.ID, Valid: true}
+	}
+	if entFuelRecord.NextFuelRecordID != nil {
+		nextId = uuid.NullUUID{UUID: *entFuelRecord.NextFuelRecordID, Valid: true}
+	}
+	return lo.ToPtr(record.UnmarshalFuelGaugeFromRepo(eve, nextId, prevId))
+}
 
 type FuelRecordRepoPSQL struct {
 	client *ent.FuelRecordClient
@@ -52,4 +69,18 @@ func (repo *FuelRecordRepoPSQL) CarHasFuelRecords(ctx context.Context, carId uui
 		return record.ErrCarHasNoFuelGaugeRecords
 	}
 	return nil
+}
+
+func (repo *FuelRecordRepoPSQL) GetFuelHistory(ctx context.Context, carId uuid.UUID) (record.FuelGaugeHistory, error) {
+	entFuelRecords, err := repo.client.Query().Where(fuelrecord.CarIDEQ(carId)).All(ctx)
+	if err != nil {
+		return record.FuelGaugeHistory{}, err
+	}
+	records := lo.Map(entFuelRecords, func(entRec *ent.FuelRecord, _ int) *record.FuelGauge {
+		return EntFuelRecordToFuelGauge(entRec)
+	})
+	return record.FuelGaugeHistory{
+		History: history.UnmarshalHistory(records),
+	}, nil
+
 }

@@ -20,6 +20,8 @@ type FuelGaugeRepo interface {
 	// returns ErrCarHasNoFuelGaugeRecords if car has no fuel records.
 	// returns error if error happened during query.
 	CarHasFuelRecords(ctx context.Context, carId uuid.UUID) error
+
+	GetFuelHistory(ctx context.Context, carId uuid.UUID) (FuelGaugeHistory, error)
 }
 
 type OdometerRepo interface {

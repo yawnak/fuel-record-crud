@@ -526,7 +526,10 @@ func (frq *FuelRecordQuery) loadNext(ctx context.Context, query *FuelRecordQuery
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*FuelRecord)
 	for i := range nodes {
-		fk := nodes[i].NextFuelRecordID
+		if nodes[i].NextFuelRecordID == nil {
+			continue
+		}
+		fk := *nodes[i].NextFuelRecordID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -570,9 +573,12 @@ func (frq *FuelRecordQuery) loadPrev(ctx context.Context, query *FuelRecordQuery
 	}
 	for _, n := range neighbors {
 		fk := n.NextFuelRecordID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "next_fuel_record_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "next_fuel_record_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "next_fuel_record_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

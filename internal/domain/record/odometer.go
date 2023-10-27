@@ -5,12 +5,17 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/internal/domain/event"
+	"github.com/yawnak/fuel-record-crud/pkg/history"
 )
 
 type Odometer struct {
 	event       event.OdometerIncrease
 	nextEventId uuid.NullUUID
 	prevEventId uuid.NullUUID
+}
+
+type OdometerHistory struct {
+	history.History[*Odometer, event.OdometerIncrease]
 }
 
 func NewFirstOdometer(initOdometer float64, creationTime time.Time) (Odometer, error) {
@@ -20,12 +25,20 @@ func NewFirstOdometer(initOdometer float64, creationTime time.Time) (Odometer, e
 	}, err
 }
 
-func (record Odometer) IsFirst() bool {
+func (record *Odometer) IsFirst() bool {
 	return !record.prevEventId.Valid
 }
 
-func (record Odometer) IsLast() bool {
+func (record *Odometer) IsLast() bool {
 	return !record.nextEventId.Valid
+}
+
+func (record *Odometer) Copy() *Odometer {
+	return &Odometer{
+		event:       record.event,
+		nextEventId: record.nextEventId,
+		prevEventId: record.prevEventId,
+	}
 }
 
 func (record *Odometer) NewNext(event event.OdometerIncrease) (*Odometer, error) {

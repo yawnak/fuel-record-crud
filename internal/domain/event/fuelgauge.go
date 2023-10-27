@@ -24,9 +24,20 @@ func NewFuelGaugeChange(differenceLiters, currentFuelLiters float64, creationTim
 	}
 	return FuelGaugeChange{
 		id:                uuid.New(),
+		differenceLiters:  differenceLiters,
 		currentFuelLiters: currentFuelLiters,
 		createdAt:         creationTime,
 	}, nil
+}
+
+func UnmarashalFuelGaugeChangeFromDB(
+	id uuid.UUID, currentFuelLiters float64, difference float64, createdAt time.Time) FuelGaugeChange {
+	return FuelGaugeChange{
+		id:                id,
+		currentFuelLiters: currentFuelLiters,
+		differenceLiters:  difference,
+		createdAt:         createdAt,
+	}
 }
 
 func (event FuelGaugeChange) Id() uuid.UUID {
