@@ -6,31 +6,48 @@
             href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
             rel="stylesheet">
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <script src="https://kit.fontawesome.com/b65befb79e.js"
+            crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
         <link rel="stylesheet" type="text/css" href="./static/css/font.css">
     </head>
     <body class="bg-blue-100 min-h-screen flex flex-col">
         <header></header>
         <main class="flex min-w-max flex-1">
-            <div class="w-1/3 min-w-max">
+            <div class="w-1/3 flex flex-col items-center min-w-max">
                 <table id="cars" class="table-auto w-full">
-                    <thead class="bg-blue-600">
+                    <thead class="bg-blue-500">
                         <tr>
-                            <th class="px-6 py-3 text-left text-white">Car</th>
+                            <th
+                                class="pl-6 py-1 flex justify-between items-center text-left text-white">
+                                <p>Car</p>
+                                <div>
+                                <button id="add-car-dialog-button"
+                                    class="h-full bg-blue-600 py-2 px-7 flex items-center hover:bg-blue-800">
+                                    <i class="fas fa-plus mx-1"></i>
+                                    <!-- Assuming you're using Font Awesome -->
+                                    <p>Add</p>
+                                </button>
+                            </th>
                         </tr>
+
                     </thead>
                     <tbody>
+                        <tr>
+                            <td>
+                                SEX
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
+
             </div>
 
             <div class="w-2/3 flex flex-col min-w-max">
                 <!-- Use flex-col to create a vertical flex container -->
                 <div class="flex w-full"> <!-- Horizontal flex container -->
                     <table id="fuel-records" class="table-auto w-1/2 min-w-max">
-                        <thead class="bg-blue-600">
+                        <thead class="bg-blue-500">
                             <tr>
                                 <th class="px-6 py-3 text-left text-white">Fuel
                                     Gauge Records</th>
@@ -41,7 +58,7 @@
                     </table>
                     <table id="odometer-records"
                         class="table-auto w-1/2 min-w-max">
-                        <thead class="bg-blue-600">
+                        <thead class="bg-blue-500">
                             <tr>
                                 <th
                                     class="px-6 py-3 text-left text-white min-w-max">Odometer
@@ -52,9 +69,19 @@
                         </tbody>
                     </table>
                 </div>
-                <p id="select-car-text" class="absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2 text-gray-400">Select a car to display information</p>
+                <p id="select-car-text"
+                    class="absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2 text-gray-400">Select
+                    a car to display information</p>
             </div>
+
         </main>
+        <div id="dialog"
+            class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 border border-gray-300 rounded shadow-lg z-50 hidden">
+            <!-- Dialog content -->
+            <p>This is a dialog window.</p>
+            <button id="close-dialog-button"
+                class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Close</button>
+        </div>
         <script>
             // Add a click event listener to your car rows
             const carRows = document.querySelectorAll('.car-row');
@@ -70,5 +97,21 @@
                 });
             });
         </script>
+        <script>
+                // Add a click event listener to open the dialog
+                const openDialogButton = document.getElementById('add-car-dialog-button');
+                const dialog = document.getElementById('dialog');
+                const closeDialogButton = document.getElementById('close-dialog-button');
+        
+                openDialogButton.addEventListener('click', () => {
+                    dialog.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden'); // This blocks scrolling
+                });
+        
+                closeDialogButton.addEventListener('click', () => {
+                    dialog.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden'); // Enable scrolling
+                });
+            </script>
     </body>
 </html>
