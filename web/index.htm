@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Web App</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet">
+  </head>
+  <body>
+    <h1 class="text-3xl font-bold">My Web App</h1>
+
+    <button hx-post="/increment" hx-target="#counter"
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Increment</button>
+
+    <div id="counter" class="text-3xl font-bold mt-4">0</div>
+  </body>
+</html>
