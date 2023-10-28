@@ -13,57 +13,50 @@
     <body>
         <header></header>
         <main class="flex">
-            <table id="cars" class="table-auto w-full">
-                <thead class="bg-blue-300">
-                    <tr>
-                        <th class="px-6 py-3 text-left text--700">Car</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white">
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-6 py-4 text-left text-gray-700">
-                            <a href="#" class="car-link"
-                                data-fuel="10.0 gallons"
-                                data-odometer="12345.0 miles">Toyota Camry</a>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-6 py-4 text-left text-gray-700">
-                            <a href="#" class="car-link"
-                                data-fuel="12.0 gallons"
-                                data-odometer="15678.0 miles">Honda Accord</a>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-6 py-4 text-left text-gray-700">
-                            <a href="#" class="car-link"
-                                data-fuel="15.0 gallons"
-                                data-odometer="18901.0 miles">Ford F-150</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <table id="fuel-records" class="table-auto w-full">
-                <thead class="bg-blue-300">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-gray-700">Fuel Gauge
-                            Records</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white">
-                </tbody>
-            </table>
-            <table id="odometer-records" class="table-auto w-full">
-                <thead class="bg-blue-300">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-gray-700">Odometer
-                            Records</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white">
+            <div class="w-1/3">
+                <table id="cars" class="table-auto w-full">
+                    <thead class="bg-blue-300">
+                        <tr>
+                            <th class="px-6 py-3 text-left text--700">Car</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        <tr class="hover:bg-gray-100">
+                            <td class="px-6 py-4 text-left text-gray-700">
+                                <a href="#" class="car-link"
+                                    data-fuel="10.0 gallons"
+                                    data-odometer="12345.0 miles">Toyota Camry</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                </tbody>
-            </table>
+            <div class="w-2/3">
+                <div class="flex w-full">
+                    <table id="fuel-records" class="table-auto w-1/2">
+                        <thead class="bg-blue-300">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-gray-700">Fuel
+                                    Gauge Records</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                        </tbody>
+                    </table>
+                    <table id="odometer-records" class="table-auto w-1/2">
+                        <thead class="bg-blue-300">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-gray-700">Odometer
+                                    Records</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                        </tbody>
+                    </table>
+                </div>
+                <p class=" justify-center align-middle flex h-full">ADDITIONAL TEXT</p>
+            </div>
         </main>
     </body>
 </html>
