@@ -10,36 +10,36 @@
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
         <link rel="stylesheet" type="text/css" href="./static/css/font.css">
     </head>
-    <body>
+    <body class="bg-blue-100">
         <header></header>
         <main class="flex min-w-max">
             <div class="w-1/3 min-w-max">
                 <table id="cars" class="table-auto w-full">
-                    <thead class="bg-blue-300">
+                    <thead class="bg-blue-600">
                         <tr>
-                            <th class="px-6 py-3 text-left text-700">Car</th>
+                            <th class="px-6 py-3 text-left text-white">Car</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white">
-                        <tr class="hover:bg-gray-100">
-                            <td class="px-6 py-4 text-left text-gray-700">
-                                <a href="#" class="car-link"
+                    <tbody>
+                        <tr class="car-row hover:bg-blue-200">
+                            <td class="px-6 py-4 text-left text-gray-900">
+                                <a href="#" class="car-link text-gray-900"
                                     data-fuel="10.0 gallons"
                                     data-odometer="12345.0 miles">Toyota Camry</a>
                             </td>
                         </tr>
-                        <tr class="hover:bg-gray-100">
+                        <tr class="car-row hover:bg-blue-200">
                             <td class="px-6 py-4 text-left text-gray-700">
                                 <a href="#" class="car-link"
                                     data-fuel="10.0 gallons"
-                                    data-odometer="12345.0 miles">Toyota Camry</a>
+                                    data-odometer="12345.0 miles">Honda Accord</a>
                             </td>
                         </tr>
-                        <tr class="hover:bg-gray-100">
+                        <tr class="car-row hover:bg-blue-200">
                             <td class="px-6 py-4 text-left text-gray-700">
                                 <a href="#" class="car-link"
                                     data-fuel="10.0 gallons"
-                                    data-odometer="12345.0 miles">Toyota Camry</a>
+                                    data-odometer="12345.0 miles">Ford F-150</a>
                             </td>
                         </tr>
                     </tbody>
@@ -49,9 +49,9 @@
             <div class="w-2/3 flex flex-col min-w-max"> <!-- Use flex-col to create a vertical flex container -->
                 <div class="flex w-full"> <!-- Horizontal flex container -->
                     <table id="fuel-records" class="table-auto w-1/2 min-w-max">
-                        <thead class="bg-blue-300">
+                        <thead class="bg-blue-600">
                             <tr>
-                                <th class="px-6 py-3 text-left text-gray-700">Fuel
+                                <th class="px-6 py-3 text-left text-white">Fuel
                                     Gauge Records</th>
                             </tr>
                         </thead>
@@ -59,18 +59,32 @@
                         </tbody>
                     </table>
                     <table id="odometer-records" class="table-auto w-1/2 min-w-max">
-                        <thead class="bg-blue-300">
+                        <thead class="bg-blue-600">
                             <tr>
-                                <th class="px-6 py-3 text-left text-gray-700 min-w-max">Odometer Records</th>
+                                <th class="px-6 py-3 text-left text-white min-w-max">Odometer Records</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white">
                         </tbody>
                     </table>
                 </div>
-                <p class="flex justify-center items-center h-full text-gray-300">Select a car to display information</p>
+                <p id="select-car-text" class="flex justify-center items-center h-full text-gray-400">Select a car to display information</p>
             </div>
-            
         </main>
+        <script>
+            // Add a click event listener to your car rows
+            const carRows = document.querySelectorAll('.car-row');
+            carRows.forEach(row => {
+                row.addEventListener('click', (event) => {
+                    document.getElementById('select-car-text').classList.add('hidden');
+                    // Remove the 'active' class from all car rows
+                    carRows.forEach(row => row.classList.remove('bg-blue-300'));
+                    carRows.forEach(row => row.classList.add('hover:bg-blue-200'));
+                    // Add the 'active' class to the clicked car row
+                    event.currentTarget.classList.remove('hover:bg-blue-200');
+                    event.currentTarget.classList.add('bg-blue-300');
+                });
+            });
+        </script>
     </body>
 </html>
