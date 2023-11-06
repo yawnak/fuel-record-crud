@@ -1,0 +1,2 @@
+-- Modify "odometer_records" table
+ALTER TABLE "odometer_records" DROP CONSTRAINT "odometer_records_odometer_records_next", DROP COLUMN "current_fuel_liters", ADD COLUMN "current_kilometers" double precision NOT NULL, ADD CONSTRAINT "odometer_records_odometer_records_prev" FOREIGN KEY ("next_odometer_record_id") REFERENCES "odometer_records" ("odometer_record_id") ON UPDATE NO ACTION ON DELETE SET NULL;

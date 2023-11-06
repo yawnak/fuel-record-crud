@@ -11,6 +11,8 @@ silent: false
 
 tasks:
   default:
+    dotenv:
+      - "./configs/secrets/postgres.env"
     label: "liveserver"
     aliases: 
       - "liveserver"
@@ -21,6 +23,13 @@ tasks:
   install-tools:
     deps:
       - "install:air"
+  seed:
+    dotenv:
+      - "./configs/secrets/postgres.env"
+    cmds:
+      - echo "Seeding database..."
+      - go run ./cmd/seed
+
 
 
 

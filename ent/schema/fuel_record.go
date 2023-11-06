@@ -17,7 +17,7 @@ type FuelRecord struct {
 // Fields of the FuelRecord.
 func (FuelRecord) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).StorageKey("fuel_record_id").Immutable(),
+		field.UUID("id", uuid.UUID{}).StorageKey("fuel_record_id").Immutable().Default(uuid.New),
 		field.Float("current_fuel_liters").Min(0).Immutable(),
 		field.Float("difference").Immutable(),
 		field.Time("created_at").Immutable(),

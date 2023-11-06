@@ -16,7 +16,7 @@ type VehicleModel interface {
 	VehicleCreateService
 }
 
-func NewCarCommand(model VehicleModel) *Vehicle {
+func NewVehicleCommand(model VehicleModel) *Vehicle {
 	return &Vehicle{
 		Create: NewCreateVehicle(model),
 	}

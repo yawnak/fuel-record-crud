@@ -369,12 +369,12 @@ func (orq *OdometerRecordQuery) WithPrev(opts ...func(*OdometerRecordQuery)) *Od
 // Example:
 //
 //	var v []struct {
-//		CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+//		CurrentKilometers float64 `json:"current_kilometers,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OdometerRecord.Query().
-//		GroupBy(odometerrecord.FieldCurrentFuelLiters).
+//		GroupBy(odometerrecord.FieldCurrentKilometers).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (orq *OdometerRecordQuery) GroupBy(field string, fields ...string) *OdometerRecordGroupBy {
@@ -392,11 +392,11 @@ func (orq *OdometerRecordQuery) GroupBy(field string, fields ...string) *Odomete
 // Example:
 //
 //	var v []struct {
-//		CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+//		CurrentKilometers float64 `json:"current_kilometers,omitempty"`
 //	}
 //
 //	client.OdometerRecord.Query().
-//		Select(odometerrecord.FieldCurrentFuelLiters).
+//		Select(odometerrecord.FieldCurrentKilometers).
 //		Scan(ctx, &v)
 func (orq *OdometerRecordQuery) Select(fields ...string) *OdometerRecordSelect {
 	orq.ctx.Fields = append(orq.ctx.Fields, fields...)
@@ -519,7 +519,10 @@ func (orq *OdometerRecordQuery) loadNext(ctx context.Context, query *OdometerRec
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OdometerRecord)
 	for i := range nodes {
-		fk := nodes[i].NextOdometerRecordID
+		if nodes[i].NextOdometerRecordID == nil {
+			continue
+		}
+		fk := *nodes[i].NextOdometerRecordID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -563,9 +566,12 @@ func (orq *OdometerRecordQuery) loadPrev(ctx context.Context, query *OdometerRec
 	}
 	for _, n := range neighbors {
 		fk := n.NextOdometerRecordID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "next_odometer_record_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "next_odometer_record_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "next_odometer_record_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

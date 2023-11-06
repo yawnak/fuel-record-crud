@@ -22,9 +22,9 @@ type OdometerRecordCreate struct {
 	hooks    []Hook
 }
 
-// SetCurrentFuelLiters sets the "current_fuel_liters" field.
-func (orc *OdometerRecordCreate) SetCurrentFuelLiters(f float64) *OdometerRecordCreate {
-	orc.mutation.SetCurrentFuelLiters(f)
+// SetCurrentKilometers sets the "current_kilometers" field.
+func (orc *OdometerRecordCreate) SetCurrentKilometers(f float64) *OdometerRecordCreate {
+	orc.mutation.SetCurrentKilometers(f)
 	return orc
 }
 
@@ -63,6 +63,14 @@ func (orc *OdometerRecordCreate) SetNillableNextOdometerRecordID(u *uuid.UUID) *
 // SetID sets the "id" field.
 func (orc *OdometerRecordCreate) SetID(u uuid.UUID) *OdometerRecordCreate {
 	orc.mutation.SetID(u)
+	return orc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (orc *OdometerRecordCreate) SetNillableID(u *uuid.UUID) *OdometerRecordCreate {
+	if u != nil {
+		orc.SetID(*u)
+	}
 	return orc
 }
 
@@ -116,6 +124,9 @@ func (orc *OdometerRecordCreate) Mutation() *OdometerRecordMutation {
 
 // Save creates the OdometerRecord in the database.
 func (orc *OdometerRecordCreate) Save(ctx context.Context) (*OdometerRecord, error) {
+	if err := orc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, orc.sqlSave, orc.mutation, orc.hooks)
 }
 
@@ -141,14 +152,26 @@ func (orc *OdometerRecordCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (orc *OdometerRecordCreate) defaults() error {
+	if _, ok := orc.mutation.ID(); !ok {
+		if odometerrecord.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized odometerrecord.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := odometerrecord.DefaultID()
+		orc.mutation.SetID(v)
+	}
+	return nil
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (orc *OdometerRecordCreate) check() error {
-	if _, ok := orc.mutation.CurrentFuelLiters(); !ok {
-		return &ValidationError{Name: "current_fuel_liters", err: errors.New(`ent: missing required field "OdometerRecord.current_fuel_liters"`)}
+	if _, ok := orc.mutation.CurrentKilometers(); !ok {
+		return &ValidationError{Name: "current_kilometers", err: errors.New(`ent: missing required field "OdometerRecord.current_kilometers"`)}
 	}
-	if v, ok := orc.mutation.CurrentFuelLiters(); ok {
-		if err := odometerrecord.CurrentFuelLitersValidator(v); err != nil {
-			return &ValidationError{Name: "current_fuel_liters", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.current_fuel_liters": %w`, err)}
+	if v, ok := orc.mutation.CurrentKilometers(); ok {
+		if err := odometerrecord.CurrentKilometersValidator(v); err != nil {
+			return &ValidationError{Name: "current_kilometers", err: fmt.Errorf(`ent: validator failed for field "OdometerRecord.current_kilometers": %w`, err)}
 		}
 	}
 	if _, ok := orc.mutation.Difference(); !ok {
@@ -203,9 +226,9 @@ func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.Create
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := orc.mutation.CurrentFuelLiters(); ok {
-		_spec.SetField(odometerrecord.FieldCurrentFuelLiters, field.TypeFloat64, value)
-		_node.CurrentFuelLiters = value
+	if value, ok := orc.mutation.CurrentKilometers(); ok {
+		_spec.SetField(odometerrecord.FieldCurrentKilometers, field.TypeFloat64, value)
+		_node.CurrentKilometers = value
 	}
 	if value, ok := orc.mutation.Difference(); ok {
 		_spec.SetField(odometerrecord.FieldDifference, field.TypeFloat64, value)
@@ -246,7 +269,7 @@ func (orc *OdometerRecordCreate) createSpec() (*OdometerRecord, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.NextOdometerRecordID = nodes[0]
+		_node.NextOdometerRecordID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := orc.mutation.PrevIDs(); len(nodes) > 0 {
@@ -286,6 +309,7 @@ func (orcb *OdometerRecordCreateBulk) Save(ctx context.Context) ([]*OdometerReco
 	for i := range orcb.builders {
 		func(i int, root context.Context) {
 			builder := orcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OdometerRecordMutation)
 				if !ok {

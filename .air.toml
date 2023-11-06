@@ -6,11 +6,11 @@ bin = "./bin/app"
 # Customize binary.
 full_bin = "APP_ENV=dev APP_USER=air ./bin/app"
 # Watch these filename extensions.
-include_ext = ["go", "tpl", "tmpl", "html"]
+include_ext = ["go", "tpl", "tmpl", "html", "htm"]
 # Ignore these filename extensions or directories.
 exclude_dir = ["assets", "tmp", "vendor"]
 # Watch these directories if you specified.
-include_dir = ["cmd", "internal", "config", "api", "pkg"]
+include_dir = ["cmd", "internal", "config", "api", "pkg", "web"]
 # Exclude files.
 exclude_file = []
 # It's not necessary to trigger build each time file changes if it's too frequent.

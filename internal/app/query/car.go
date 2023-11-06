@@ -3,39 +3,37 @@ package query
 import (
 	"context"
 
-	"github.com/google/uuid"
-
-	"github.com/yawnak/fuel-record-crud/internal/domain/car"
+	"github.com/yawnak/fuel-record-crud/internal/domain/vehicle"
 )
 
-type Car struct {
-	GetHandler *GetСarHandler
+type Vehicle struct {
+	GetVehiclesCurrentData *GetVehiclesCurrentDataHandler
 }
 
-type CarModel interface {
-	CarReadModel
+type VehicleModel interface {
+	VehicleCurrentReadModel
 }
 
-func NewCarQuery(model CarModel) *Car {
-	return &Car{
-		GetHandler: NewCarHandler(model),
+func NewVehicleQuery(model VehicleModel) *Vehicle {
+	return &Vehicle{
+		GetVehiclesCurrentData: NewGetVehiclesCurrentDataHandler(model),
 	}
 }
 
-type CarReadModel interface {
-	GetCar(ctx context.Context, id uuid.UUID) (car.Car, error)
+type VehicleCurrentReadModel interface {
+	GetVehiclesCurrent(ctx context.Context) ([]vehicle.Vehicle, error)
 }
 
-type GetСarHandler struct {
-	carReadModel CarReadModel
+type GetVehiclesCurrentDataHandler struct {
+	model VehicleCurrentReadModel
 }
 
-func NewCarHandler(readModel CarReadModel) *GetСarHandler {
-	return &GetСarHandler{
-		carReadModel: readModel,
+func NewGetVehiclesCurrentDataHandler(readModel VehicleCurrentReadModel) *GetVehiclesCurrentDataHandler {
+	return &GetVehiclesCurrentDataHandler{
+		model: readModel,
 	}
 }
 
-func (h *GetСarHandler) Handle(ctx context.Context, id uuid.UUID) (car.Car, error) {
-	return h.carReadModel.GetCar(ctx, id)
+func (h *GetVehiclesCurrentDataHandler) Handle(ctx context.Context) ([]vehicle.Vehicle, error) {
+	return h.model.GetVehiclesCurrent(ctx)
 }

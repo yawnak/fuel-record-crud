@@ -66,6 +66,14 @@ func (frc *FuelRecordCreate) SetID(u uuid.UUID) *FuelRecordCreate {
 	return frc
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (frc *FuelRecordCreate) SetNillableID(u *uuid.UUID) *FuelRecordCreate {
+	if u != nil {
+		frc.SetID(*u)
+	}
+	return frc
+}
+
 // SetCar sets the "car" edge to the Car entity.
 func (frc *FuelRecordCreate) SetCar(c *Car) *FuelRecordCreate {
 	return frc.SetCarID(c.ID)
@@ -116,6 +124,9 @@ func (frc *FuelRecordCreate) Mutation() *FuelRecordMutation {
 
 // Save creates the FuelRecord in the database.
 func (frc *FuelRecordCreate) Save(ctx context.Context) (*FuelRecord, error) {
+	if err := frc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, frc.sqlSave, frc.mutation, frc.hooks)
 }
 
@@ -139,6 +150,18 @@ func (frc *FuelRecordCreate) ExecX(ctx context.Context) {
 	if err := frc.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (frc *FuelRecordCreate) defaults() error {
+	if _, ok := frc.mutation.ID(); !ok {
+		if fuelrecord.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized fuelrecord.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := fuelrecord.DefaultID()
+		frc.mutation.SetID(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -281,6 +304,7 @@ func (frcb *FuelRecordCreateBulk) Save(ctx context.Context) ([]*FuelRecord, erro
 	for i := range frcb.builders {
 		func(i int, root context.Context) {
 			builder := frcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FuelRecordMutation)
 				if !ok {

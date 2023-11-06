@@ -11,9 +11,9 @@ type Application struct {
 }
 
 type Commands struct {
-	Vehicle command.Vehicle
+	Vehicle *command.Vehicle
 }
 
 type Queries struct {
-	Car query.Car
+	Vehicle *query.Vehicle
 }

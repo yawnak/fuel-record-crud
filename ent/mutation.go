@@ -1498,24 +1498,24 @@ func (m *FuelRecordMutation) ResetEdge(name string) error {
 // OdometerRecordMutation represents an operation that mutates the OdometerRecord nodes in the graph.
 type OdometerRecordMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	current_fuel_liters    *float64
-	addcurrent_fuel_liters *float64
-	difference             *float64
-	adddifference          *float64
-	created_at             *time.Time
-	clearedFields          map[string]struct{}
-	car                    *uuid.UUID
-	clearedcar             bool
-	next                   *uuid.UUID
-	clearednext            bool
-	prev                   *uuid.UUID
-	clearedprev            bool
-	done                   bool
-	oldValue               func(context.Context) (*OdometerRecord, error)
-	predicates             []predicate.OdometerRecord
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	current_kilometers    *float64
+	addcurrent_kilometers *float64
+	difference            *float64
+	adddifference         *float64
+	created_at            *time.Time
+	clearedFields         map[string]struct{}
+	car                   *uuid.UUID
+	clearedcar            bool
+	next                  *uuid.UUID
+	clearednext           bool
+	prev                  *uuid.UUID
+	clearedprev           bool
+	done                  bool
+	oldValue              func(context.Context) (*OdometerRecord, error)
+	predicates            []predicate.OdometerRecord
 }
 
 var _ ent.Mutation = (*OdometerRecordMutation)(nil)
@@ -1622,60 +1622,60 @@ func (m *OdometerRecordMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetCurrentFuelLiters sets the "current_fuel_liters" field.
-func (m *OdometerRecordMutation) SetCurrentFuelLiters(f float64) {
-	m.current_fuel_liters = &f
-	m.addcurrent_fuel_liters = nil
+// SetCurrentKilometers sets the "current_kilometers" field.
+func (m *OdometerRecordMutation) SetCurrentKilometers(f float64) {
+	m.current_kilometers = &f
+	m.addcurrent_kilometers = nil
 }
 
-// CurrentFuelLiters returns the value of the "current_fuel_liters" field in the mutation.
-func (m *OdometerRecordMutation) CurrentFuelLiters() (r float64, exists bool) {
-	v := m.current_fuel_liters
+// CurrentKilometers returns the value of the "current_kilometers" field in the mutation.
+func (m *OdometerRecordMutation) CurrentKilometers() (r float64, exists bool) {
+	v := m.current_kilometers
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCurrentFuelLiters returns the old "current_fuel_liters" field's value of the OdometerRecord entity.
+// OldCurrentKilometers returns the old "current_kilometers" field's value of the OdometerRecord entity.
 // If the OdometerRecord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OdometerRecordMutation) OldCurrentFuelLiters(ctx context.Context) (v float64, err error) {
+func (m *OdometerRecordMutation) OldCurrentKilometers(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCurrentFuelLiters is only allowed on UpdateOne operations")
+		return v, errors.New("OldCurrentKilometers is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCurrentFuelLiters requires an ID field in the mutation")
+		return v, errors.New("OldCurrentKilometers requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCurrentFuelLiters: %w", err)
+		return v, fmt.Errorf("querying old value for OldCurrentKilometers: %w", err)
 	}
-	return oldValue.CurrentFuelLiters, nil
+	return oldValue.CurrentKilometers, nil
 }
 
-// AddCurrentFuelLiters adds f to the "current_fuel_liters" field.
-func (m *OdometerRecordMutation) AddCurrentFuelLiters(f float64) {
-	if m.addcurrent_fuel_liters != nil {
-		*m.addcurrent_fuel_liters += f
+// AddCurrentKilometers adds f to the "current_kilometers" field.
+func (m *OdometerRecordMutation) AddCurrentKilometers(f float64) {
+	if m.addcurrent_kilometers != nil {
+		*m.addcurrent_kilometers += f
 	} else {
-		m.addcurrent_fuel_liters = &f
+		m.addcurrent_kilometers = &f
 	}
 }
 
-// AddedCurrentFuelLiters returns the value that was added to the "current_fuel_liters" field in this mutation.
-func (m *OdometerRecordMutation) AddedCurrentFuelLiters() (r float64, exists bool) {
-	v := m.addcurrent_fuel_liters
+// AddedCurrentKilometers returns the value that was added to the "current_kilometers" field in this mutation.
+func (m *OdometerRecordMutation) AddedCurrentKilometers() (r float64, exists bool) {
+	v := m.addcurrent_kilometers
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetCurrentFuelLiters resets all changes to the "current_fuel_liters" field.
-func (m *OdometerRecordMutation) ResetCurrentFuelLiters() {
-	m.current_fuel_liters = nil
-	m.addcurrent_fuel_liters = nil
+// ResetCurrentKilometers resets all changes to the "current_kilometers" field.
+func (m *OdometerRecordMutation) ResetCurrentKilometers() {
+	m.current_kilometers = nil
+	m.addcurrent_kilometers = nil
 }
 
 // SetDifference sets the "difference" field.
@@ -1823,7 +1823,7 @@ func (m *OdometerRecordMutation) NextOdometerRecordID() (r uuid.UUID, exists boo
 // OldNextOdometerRecordID returns the old "next_odometer_record_id" field's value of the OdometerRecord entity.
 // If the OdometerRecord object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OdometerRecordMutation) OldNextOdometerRecordID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OdometerRecordMutation) OldNextOdometerRecordID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNextOdometerRecordID is only allowed on UpdateOne operations")
 	}
@@ -1996,8 +1996,8 @@ func (m *OdometerRecordMutation) Type() string {
 // AddedFields().
 func (m *OdometerRecordMutation) Fields() []string {
 	fields := make([]string, 0, 5)
-	if m.current_fuel_liters != nil {
-		fields = append(fields, odometerrecord.FieldCurrentFuelLiters)
+	if m.current_kilometers != nil {
+		fields = append(fields, odometerrecord.FieldCurrentKilometers)
 	}
 	if m.difference != nil {
 		fields = append(fields, odometerrecord.FieldDifference)
@@ -2019,8 +2019,8 @@ func (m *OdometerRecordMutation) Fields() []string {
 // schema.
 func (m *OdometerRecordMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case odometerrecord.FieldCurrentFuelLiters:
-		return m.CurrentFuelLiters()
+	case odometerrecord.FieldCurrentKilometers:
+		return m.CurrentKilometers()
 	case odometerrecord.FieldDifference:
 		return m.Difference()
 	case odometerrecord.FieldCreatedAt:
@@ -2038,8 +2038,8 @@ func (m *OdometerRecordMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *OdometerRecordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case odometerrecord.FieldCurrentFuelLiters:
-		return m.OldCurrentFuelLiters(ctx)
+	case odometerrecord.FieldCurrentKilometers:
+		return m.OldCurrentKilometers(ctx)
 	case odometerrecord.FieldDifference:
 		return m.OldDifference(ctx)
 	case odometerrecord.FieldCreatedAt:
@@ -2057,12 +2057,12 @@ func (m *OdometerRecordMutation) OldField(ctx context.Context, name string) (ent
 // type.
 func (m *OdometerRecordMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case odometerrecord.FieldCurrentFuelLiters:
+	case odometerrecord.FieldCurrentKilometers:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCurrentFuelLiters(v)
+		m.SetCurrentKilometers(v)
 		return nil
 	case odometerrecord.FieldDifference:
 		v, ok := value.(float64)
@@ -2100,8 +2100,8 @@ func (m *OdometerRecordMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *OdometerRecordMutation) AddedFields() []string {
 	var fields []string
-	if m.addcurrent_fuel_liters != nil {
-		fields = append(fields, odometerrecord.FieldCurrentFuelLiters)
+	if m.addcurrent_kilometers != nil {
+		fields = append(fields, odometerrecord.FieldCurrentKilometers)
 	}
 	if m.adddifference != nil {
 		fields = append(fields, odometerrecord.FieldDifference)
@@ -2114,8 +2114,8 @@ func (m *OdometerRecordMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *OdometerRecordMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case odometerrecord.FieldCurrentFuelLiters:
-		return m.AddedCurrentFuelLiters()
+	case odometerrecord.FieldCurrentKilometers:
+		return m.AddedCurrentKilometers()
 	case odometerrecord.FieldDifference:
 		return m.AddedDifference()
 	}
@@ -2127,12 +2127,12 @@ func (m *OdometerRecordMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *OdometerRecordMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case odometerrecord.FieldCurrentFuelLiters:
+	case odometerrecord.FieldCurrentKilometers:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddCurrentFuelLiters(v)
+		m.AddCurrentKilometers(v)
 		return nil
 	case odometerrecord.FieldDifference:
 		v, ok := value.(float64)
@@ -2177,8 +2177,8 @@ func (m *OdometerRecordMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *OdometerRecordMutation) ResetField(name string) error {
 	switch name {
-	case odometerrecord.FieldCurrentFuelLiters:
-		m.ResetCurrentFuelLiters()
+	case odometerrecord.FieldCurrentKilometers:
+		m.ResetCurrentKilometers()
 		return nil
 	case odometerrecord.FieldDifference:
 		m.ResetDifference()

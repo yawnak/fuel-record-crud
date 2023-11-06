@@ -30,6 +30,16 @@ func NewOdometerIncrease(differenceKilometers, currentKilometers float64, creati
 	}, nil
 }
 
+func UnmarshalOdometerIncreaseFromDB(
+	id uuid.UUID, currentOdometer float64, difference float64, createdAt time.Time) OdometerIncrease {
+	return OdometerIncrease{
+		id:                   id,
+		currentKilometers:    currentOdometer,
+		differenceKilometers: difference,
+		createdAt:            createdAt,
+	}
+}
+
 func (event OdometerIncrease) Id() uuid.UUID {
 	return event.id
 }

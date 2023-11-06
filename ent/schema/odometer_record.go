@@ -16,12 +16,12 @@ type OdometerRecord struct {
 // Fields of the OdometerRecord.
 func (OdometerRecord) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).StorageKey("odometer_record_id").Immutable(),
-		field.Float("current_fuel_liters").Min(0).Immutable(),
+		field.UUID("id", uuid.UUID{}).StorageKey("odometer_record_id").Default(uuid.New).Immutable(),
+		field.Float("current_kilometers").Min(0).Immutable(),
 		field.Float("difference").Min(0).Immutable(),
 		field.Time("created_at").Immutable(),
 		field.UUID("car_id", uuid.UUID{}).Immutable(),
-		field.UUID("next_odometer_record_id", uuid.UUID{}).Optional().Immutable(),
+		field.UUID("next_odometer_record_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 	}
 }
 

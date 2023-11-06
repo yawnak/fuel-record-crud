@@ -25,6 +25,18 @@ func NewFirstOdometer(initOdometer float64, creationTime time.Time) (Odometer, e
 	}, err
 }
 
+func UnmarshalOdometerFromRepo(
+	event event.OdometerIncrease,
+	nextEventId uuid.NullUUID,
+	prevEventId uuid.NullUUID,
+) Odometer {
+	return Odometer{
+		event:       event,
+		nextEventId: nextEventId,
+		prevEventId: prevEventId,
+	}
+}
+
 func (record *Odometer) IsFirst() bool {
 	return !record.prevEventId.Valid
 }
@@ -56,4 +68,8 @@ func (record *Odometer) NewNext(event event.OdometerIncrease) (*Odometer, error)
 
 func (record Odometer) Validate() error {
 	return nil
+}
+
+func (record *Odometer) Event() event.OdometerIncrease {
+	return record.event
 }

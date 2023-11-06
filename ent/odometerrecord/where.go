@@ -56,9 +56,9 @@ func IDLTE(id uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldLTE(FieldID, id))
 }
 
-// CurrentFuelLiters applies equality check predicate on the "current_fuel_liters" field. It's identical to CurrentFuelLitersEQ.
-func CurrentFuelLiters(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentFuelLiters, v))
+// CurrentKilometers applies equality check predicate on the "current_kilometers" field. It's identical to CurrentKilometersEQ.
+func CurrentKilometers(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentKilometers, v))
 }
 
 // Difference applies equality check predicate on the "difference" field. It's identical to DifferenceEQ.
@@ -81,44 +81,44 @@ func NextOdometerRecordID(v uuid.UUID) predicate.OdometerRecord {
 	return predicate.OdometerRecord(sql.FieldEQ(FieldNextOdometerRecordID, v))
 }
 
-// CurrentFuelLitersEQ applies the EQ predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersEQ(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentFuelLiters, v))
+// CurrentKilometersEQ applies the EQ predicate on the "current_kilometers" field.
+func CurrentKilometersEQ(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldEQ(FieldCurrentKilometers, v))
 }
 
-// CurrentFuelLitersNEQ applies the NEQ predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersNEQ(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldNEQ(FieldCurrentFuelLiters, v))
+// CurrentKilometersNEQ applies the NEQ predicate on the "current_kilometers" field.
+func CurrentKilometersNEQ(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNEQ(FieldCurrentKilometers, v))
 }
 
-// CurrentFuelLitersIn applies the In predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersIn(vs ...float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldIn(FieldCurrentFuelLiters, vs...))
+// CurrentKilometersIn applies the In predicate on the "current_kilometers" field.
+func CurrentKilometersIn(vs ...float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldIn(FieldCurrentKilometers, vs...))
 }
 
-// CurrentFuelLitersNotIn applies the NotIn predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersNotIn(vs ...float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldNotIn(FieldCurrentFuelLiters, vs...))
+// CurrentKilometersNotIn applies the NotIn predicate on the "current_kilometers" field.
+func CurrentKilometersNotIn(vs ...float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldNotIn(FieldCurrentKilometers, vs...))
 }
 
-// CurrentFuelLitersGT applies the GT predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersGT(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldGT(FieldCurrentFuelLiters, v))
+// CurrentKilometersGT applies the GT predicate on the "current_kilometers" field.
+func CurrentKilometersGT(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGT(FieldCurrentKilometers, v))
 }
 
-// CurrentFuelLitersGTE applies the GTE predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersGTE(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldGTE(FieldCurrentFuelLiters, v))
+// CurrentKilometersGTE applies the GTE predicate on the "current_kilometers" field.
+func CurrentKilometersGTE(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldGTE(FieldCurrentKilometers, v))
 }
 
-// CurrentFuelLitersLT applies the LT predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersLT(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldLT(FieldCurrentFuelLiters, v))
+// CurrentKilometersLT applies the LT predicate on the "current_kilometers" field.
+func CurrentKilometersLT(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLT(FieldCurrentKilometers, v))
 }
 
-// CurrentFuelLitersLTE applies the LTE predicate on the "current_fuel_liters" field.
-func CurrentFuelLitersLTE(v float64) predicate.OdometerRecord {
-	return predicate.OdometerRecord(sql.FieldLTE(FieldCurrentFuelLiters, v))
+// CurrentKilometersLTE applies the LTE predicate on the "current_kilometers" field.
+func CurrentKilometersLTE(v float64) predicate.OdometerRecord {
+	return predicate.OdometerRecord(sql.FieldLTE(FieldCurrentKilometers, v))
 }
 
 // DifferenceEQ applies the EQ predicate on the "difference" field.

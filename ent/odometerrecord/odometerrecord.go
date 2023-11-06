@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -13,8 +14,8 @@ const (
 	Label = "odometer_record"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "odometer_record_id"
-	// FieldCurrentFuelLiters holds the string denoting the current_fuel_liters field in the database.
-	FieldCurrentFuelLiters = "current_fuel_liters"
+	// FieldCurrentKilometers holds the string denoting the current_kilometers field in the database.
+	FieldCurrentKilometers = "current_kilometers"
 	// FieldDifference holds the string denoting the difference field in the database.
 	FieldDifference = "difference"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -53,7 +54,7 @@ const (
 // Columns holds all SQL columns for odometerrecord fields.
 var Columns = []string{
 	FieldID,
-	FieldCurrentFuelLiters,
+	FieldCurrentKilometers,
 	FieldDifference,
 	FieldCreatedAt,
 	FieldCarID,
@@ -77,10 +78,12 @@ func ValidColumn(column string) bool {
 //	import _ "github.com/yawnak/fuel-record-crud/ent/runtime"
 var (
 	Hooks [1]ent.Hook
-	// CurrentFuelLitersValidator is a validator for the "current_fuel_liters" field. It is called by the builders before save.
-	CurrentFuelLitersValidator func(float64) error
+	// CurrentKilometersValidator is a validator for the "current_kilometers" field. It is called by the builders before save.
+	CurrentKilometersValidator func(float64) error
 	// DifferenceValidator is a validator for the "difference" field. It is called by the builders before save.
 	DifferenceValidator func(float64) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the OdometerRecord queries.
@@ -91,9 +94,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByCurrentFuelLiters orders the results by the current_fuel_liters field.
-func ByCurrentFuelLiters(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCurrentFuelLiters, opts...).ToFunc()
+// ByCurrentKilometers orders the results by the current_kilometers field.
+func ByCurrentKilometers(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCurrentKilometers, opts...).ToFunc()
 }
 
 // ByDifference orders the results by the difference field.

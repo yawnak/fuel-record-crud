@@ -53,7 +53,7 @@ var (
 	// OdometerRecordsColumns holds the columns for the "odometer_records" table.
 	OdometerRecordsColumns = []*schema.Column{
 		{Name: "odometer_record_id", Type: field.TypeUUID},
-		{Name: "current_fuel_liters", Type: field.TypeFloat64},
+		{Name: "current_kilometers", Type: field.TypeFloat64},
 		{Name: "difference", Type: field.TypeFloat64},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "car_id", Type: field.TypeUUID},

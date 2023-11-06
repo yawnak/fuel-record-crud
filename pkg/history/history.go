@@ -23,6 +23,11 @@ type History[H Historable[H, Event], Event any] struct {
 }
 
 func NewHistory[H Historable[H, Event], Event any](record H) History[H, Event] {
+	if lo.IsEmpty(record) {
+		return History[H, Event]{
+			list: []H{},
+		}
+	}
 	return History[H, Event]{
 		list: []H{record},
 	}

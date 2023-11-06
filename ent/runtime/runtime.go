@@ -5,6 +5,7 @@ package runtime
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/ent/fuelrecord"
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
@@ -43,18 +44,26 @@ func init() {
 	fuelrecordDescCurrentFuelLiters := fuelrecordFields[1].Descriptor()
 	// fuelrecord.CurrentFuelLitersValidator is a validator for the "current_fuel_liters" field. It is called by the builders before save.
 	fuelrecord.CurrentFuelLitersValidator = fuelrecordDescCurrentFuelLiters.Validators[0].(func(float64) error)
+	// fuelrecordDescID is the schema descriptor for id field.
+	fuelrecordDescID := fuelrecordFields[0].Descriptor()
+	// fuelrecord.DefaultID holds the default value on creation for the id field.
+	fuelrecord.DefaultID = fuelrecordDescID.Default.(func() uuid.UUID)
 	odometerrecordHooks := schema.OdometerRecord{}.Hooks()
 	odometerrecord.Hooks[0] = odometerrecordHooks[0]
 	odometerrecordFields := schema.OdometerRecord{}.Fields()
 	_ = odometerrecordFields
-	// odometerrecordDescCurrentFuelLiters is the schema descriptor for current_fuel_liters field.
-	odometerrecordDescCurrentFuelLiters := odometerrecordFields[1].Descriptor()
-	// odometerrecord.CurrentFuelLitersValidator is a validator for the "current_fuel_liters" field. It is called by the builders before save.
-	odometerrecord.CurrentFuelLitersValidator = odometerrecordDescCurrentFuelLiters.Validators[0].(func(float64) error)
+	// odometerrecordDescCurrentKilometers is the schema descriptor for current_kilometers field.
+	odometerrecordDescCurrentKilometers := odometerrecordFields[1].Descriptor()
+	// odometerrecord.CurrentKilometersValidator is a validator for the "current_kilometers" field. It is called by the builders before save.
+	odometerrecord.CurrentKilometersValidator = odometerrecordDescCurrentKilometers.Validators[0].(func(float64) error)
 	// odometerrecordDescDifference is the schema descriptor for difference field.
 	odometerrecordDescDifference := odometerrecordFields[2].Descriptor()
 	// odometerrecord.DifferenceValidator is a validator for the "difference" field. It is called by the builders before save.
 	odometerrecord.DifferenceValidator = odometerrecordDescDifference.Validators[0].(func(float64) error)
+	// odometerrecordDescID is the schema descriptor for id field.
+	odometerrecordDescID := odometerrecordFields[0].Descriptor()
+	// odometerrecord.DefaultID holds the default value on creation for the id field.
+	odometerrecord.DefaultID = odometerrecordDescID.Default.(func() uuid.UUID)
 }
 
 const (

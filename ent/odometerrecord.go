@@ -19,8 +19,8 @@ type OdometerRecord struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// CurrentFuelLiters holds the value of the "current_fuel_liters" field.
-	CurrentFuelLiters float64 `json:"current_fuel_liters,omitempty"`
+	// CurrentKilometers holds the value of the "current_kilometers" field.
+	CurrentKilometers float64 `json:"current_kilometers,omitempty"`
 	// Difference holds the value of the "difference" field.
 	Difference float64 `json:"difference,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -28,7 +28,7 @@ type OdometerRecord struct {
 	// CarID holds the value of the "car_id" field.
 	CarID uuid.UUID `json:"car_id,omitempty"`
 	// NextOdometerRecordID holds the value of the "next_odometer_record_id" field.
-	NextOdometerRecordID uuid.UUID `json:"next_odometer_record_id,omitempty"`
+	NextOdometerRecordID *uuid.UUID `json:"next_odometer_record_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OdometerRecordQuery when eager-loading is set.
 	Edges        OdometerRecordEdges `json:"edges"`
@@ -92,11 +92,13 @@ func (*OdometerRecord) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case odometerrecord.FieldCurrentFuelLiters, odometerrecord.FieldDifference:
+		case odometerrecord.FieldNextOdometerRecordID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case odometerrecord.FieldCurrentKilometers, odometerrecord.FieldDifference:
 			values[i] = new(sql.NullFloat64)
 		case odometerrecord.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case odometerrecord.FieldID, odometerrecord.FieldCarID, odometerrecord.FieldNextOdometerRecordID:
+		case odometerrecord.FieldID, odometerrecord.FieldCarID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -119,11 +121,11 @@ func (or *OdometerRecord) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				or.ID = *value
 			}
-		case odometerrecord.FieldCurrentFuelLiters:
+		case odometerrecord.FieldCurrentKilometers:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field current_fuel_liters", values[i])
+				return fmt.Errorf("unexpected type %T for field current_kilometers", values[i])
 			} else if value.Valid {
-				or.CurrentFuelLiters = value.Float64
+				or.CurrentKilometers = value.Float64
 			}
 		case odometerrecord.FieldDifference:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -144,10 +146,11 @@ func (or *OdometerRecord) assignValues(columns []string, values []any) error {
 				or.CarID = *value
 			}
 		case odometerrecord.FieldNextOdometerRecordID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field next_odometer_record_id", values[i])
-			} else if value != nil {
-				or.NextOdometerRecordID = *value
+			} else if value.Valid {
+				or.NextOdometerRecordID = new(uuid.UUID)
+				*or.NextOdometerRecordID = *value.S.(*uuid.UUID)
 			}
 		default:
 			or.selectValues.Set(columns[i], values[i])
@@ -200,8 +203,8 @@ func (or *OdometerRecord) String() string {
 	var builder strings.Builder
 	builder.WriteString("OdometerRecord(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", or.ID))
-	builder.WriteString("current_fuel_liters=")
-	builder.WriteString(fmt.Sprintf("%v", or.CurrentFuelLiters))
+	builder.WriteString("current_kilometers=")
+	builder.WriteString(fmt.Sprintf("%v", or.CurrentKilometers))
 	builder.WriteString(", ")
 	builder.WriteString("difference=")
 	builder.WriteString(fmt.Sprintf("%v", or.Difference))
@@ -212,8 +215,10 @@ func (or *OdometerRecord) String() string {
 	builder.WriteString("car_id=")
 	builder.WriteString(fmt.Sprintf("%v", or.CarID))
 	builder.WriteString(", ")
-	builder.WriteString("next_odometer_record_id=")
-	builder.WriteString(fmt.Sprintf("%v", or.NextOdometerRecordID))
+	if v := or.NextOdometerRecordID; v != nil {
+		builder.WriteString("next_odometer_record_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

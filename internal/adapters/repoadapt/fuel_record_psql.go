@@ -84,3 +84,15 @@ func (repo *FuelRecordRepoPSQL) GetFuelHistory(ctx context.Context, carId uuid.U
 	}, nil
 
 }
+
+func (repo *FuelRecordRepoPSQL) QueryLastFuelRecords(ctx context.Context) (map[string]record.FuelGauge, error) {
+	fuelrecords, err := repo.client.Query().Where(fuelrecord.NextFuelRecordIDIsNil()).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	res := map[string]record.FuelGauge{}
+	for i, _ := range fuelrecords {
+		res[fuelrecords[i].CarID.String()] = lo.FromPtr(EntFuelRecordToFuelGauge(fuelrecords[i]))
+	}
+	return res, nil
+}

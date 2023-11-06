@@ -10,12 +10,20 @@ import (
 	"github.com/gookit/config/v2/yaml"
 )
 
+type Config struct {
+	DBConn DBConnConfig
+	Server ServerConfig
+}
+
 type DBConnConfig struct {
-	Host     string `config:"dbhost"`
-	Port     string `config:"dbport"`
-	User     string `config:"dbuser"`
-	Name     string `config:"dbname"`
-	Password string
+	Host   string `config:"POSTGRES_HOST"`
+	Port   string `config:"POSTGRES_PORT"`
+	User   string `config:"POSTGRES_USER"`
+	DbName string `config:"POSTGRES_DB"`
+}
+
+type ServerConfig struct {
+	Port string `config:"PORT"`
 }
 
 func BindConfig(conf any, paths ...string) error {
@@ -44,4 +52,16 @@ func MustGetEnv(key string) string {
 		panic(fmt.Sprintf("env variable %s not found", key))
 	}
 	return val
+}
+
+func NewDBConnConfig(filepath string) (*DBConnConfig, error) {
+	conf := &DBConnConfig{}
+	err := BindConfig(conf, filepath)
+	return conf, err
+}
+
+func NewServerConfig(filepath string) (*ServerConfig, error) {
+	conf := &ServerConfig{}
+	err := BindConfig(conf, filepath)
+	return conf, err
 }
