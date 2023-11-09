@@ -1,0 +1,61 @@
+ <!-- Use flex-col to create a vertical flex container -->
+<div class="flex w-full"> <!-- Horizontal flex container -->
+    <table id="fuel-records"
+        class="table-auto w-1/2 min-w-max">
+        <thead class="bg-blue-500">
+            <tr>
+                <th class="px-6 py-3 text-left text-white">Fuel
+                    Gauge Records</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white">
+            {{if not .FuelRecords}}
+            <tr class="bg-blue-50">
+                <td colspan="3" class="text-center text-gray-400 py-6">
+                    No data
+                </td>
+            </tr>
+            {{else}}
+            {{range .FuelRecords}}
+            <tr
+                class="odd:bg-slate-200 even:bg-blue-50">
+                <td
+                    class="pl-6 pr-2 py-6 flex justify-between items-center border-r-2">
+                    {{.CurrentFuel}}L {{.Difference}}L {{.CreatedAt}}
+                </td>
+            </tr>
+            {{end}}
+            {{end}}
+        </tbody>
+    </table>
+    <table id="odometer-records "
+        class="table-auto w-1/2 min-w-max">
+        <thead class="bg-blue-500">
+            <tr>
+                <th
+                    class="px-6 py-3 text-left text-white min-w-max">
+                    Odometer Records
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white">
+            {{if not .OdometerRecords}}
+            <tr class="bg-blue-50">
+                <td colspan="3" class="text-gray-400 text-center py-6">
+                    No data
+                </td>
+            </tr>
+            {{else}}
+            {{range .OdometerRecords}}
+            <tr
+                class="odd:bg-slate-200 even:bg-blue-50">
+                <td
+                    class="pl-6 pr-2 py-6 flex justify-between items-center border-r-2">
+                    {{.CurrentOdometer}}L {{.Difference}}L {{.CreatedAt}}
+                </td>
+            </tr>
+            {{end}}
+            {{end}}
+        </tbody>
+    </table>
+</div>

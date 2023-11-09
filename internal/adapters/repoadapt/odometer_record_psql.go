@@ -9,6 +9,7 @@ import (
 	"github.com/yawnak/fuel-record-crud/ent/odometerrecord"
 	"github.com/yawnak/fuel-record-crud/internal/domain/event"
 	"github.com/yawnak/fuel-record-crud/internal/domain/record"
+	"github.com/yawnak/fuel-record-crud/pkg/history"
 )
 
 func EntOdometerRecordToOdometer(entOdometer *ent.OdometerRecord) *record.Odometer {
@@ -43,4 +44,18 @@ func (repo *OdometerRecordRepoPSQL) QueryLastOdometerRecords(ctx context.Context
 		res[fuelrecords[i].CarID.String()] = lo.FromPtr(EntOdometerRecordToOdometer(fuelrecords[i]))
 	}
 	return res, nil
+}
+
+func (repo *OdometerRecordRepoPSQL) GetOdometerHistory(ctx context.Context, carId uuid.UUID) (record.OdometerHistory, error) {
+	records, err := repo.client.Query().Where(odometerrecord.CarIDEQ(carId)).All(ctx)
+	if err != nil {
+		return record.OdometerHistory{}, err
+	}
+	res := make([]*record.Odometer, len(records))
+	for i, _ := range records {
+		res[i] = EntOdometerRecordToOdometer(records[i])
+	}
+	return record.OdometerHistory{
+		History: history.UnmarshalHistory(res),
+	}, nil
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 	"github.com/yawnak/fuel-record-crud/internal/domain/vehicle"
 )
 
@@ -22,10 +21,6 @@ func NewVehicleCommand(model VehicleModel) *Vehicle {
 	}
 }
 
-type CarCreateModel interface {
-	CreateCar(context.Context, car.Car) (car.Car, error)
-}
-
 type VehicleCreateService interface {
 	CreateVehicle(ctx context.Context,
 		model, make string, year int32,
@@ -35,9 +30,13 @@ type VehicleCreateService interface {
 }
 
 type CreateVehicle struct {
-	Model string
-	Make  string
-	Year  int32
+	Model                string
+	Make                 string
+	Year                 int32
+	CurrentFuel          *float64
+	FuelCreationTime     *time.Time
+	CurrentOdometer      *float64
+	OdometerCreationTime *time.Time
 }
 
 type CreateVehicleHandler struct {
@@ -50,7 +49,8 @@ func NewCreateVehicle(createService VehicleCreateService) *CreateVehicleHandler 
 	}
 }
 
-// func (c *CreateVehicleHandler) Handle(ctx context.Context, cmd CreateCar) (car.Car, error) {
-// 	car.New(cmd.Model, cmd.Make, cmd.Year)
-// 	return c.carCreateModel.CreateCar(ctx, car)
-// }
+func (c *CreateVehicleHandler) Handle(ctx context.Context, cmd CreateVehicle) (*vehicle.Vehicle, error) {
+	return c.vehicleCreateService.CreateVehicle(ctx, cmd.Model, cmd.Make, cmd.Year,
+		cmd.CurrentFuel, *cmd.FuelCreationTime,
+		cmd.CurrentOdometer, *cmd.OdometerCreationTime)
+}

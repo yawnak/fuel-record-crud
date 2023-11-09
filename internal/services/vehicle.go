@@ -11,7 +11,6 @@ import (
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 	"github.com/yawnak/fuel-record-crud/internal/domain/record"
 	"github.com/yawnak/fuel-record-crud/internal/domain/vehicle"
-	"github.com/yawnak/fuel-record-crud/pkg/history"
 )
 
 type VehicleTx[
@@ -100,7 +99,7 @@ func (s *VehicleService[CR, FR, OR, TX]) CreateVehicle(
 	return &vh, nil
 }
 
-func (s *VehicleService[CR, FR, OR, TX]) GetVehicle(ctx context.Context, carId uuid.UUID) (*vehicle.Vehicle, error) {
+func (s *VehicleService[CR, FR, OR, TX]) GetVehicle(ctx context.Context, vehicleId uuid.UUID) (*vehicle.Vehicle, error) {
 	var err error
 	vh := vehicle.Vehicle{}
 
@@ -109,17 +108,22 @@ func (s *VehicleService[CR, FR, OR, TX]) GetVehicle(ctx context.Context, carId u
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 
-	cr, err := tx.CarRepo().GetCar(ctx, carId)
+	cr, err := tx.CarRepo().GetCar(ctx, vehicleId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get car: %w", err)
 	}
 
-	fhist, err := tx.FuelGaugeChangeRepo().GetFuelHistory(ctx, carId)
+	fhist, err := tx.FuelGaugeChangeRepo().GetFuelHistory(ctx, vehicleId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fuel history: %w", err)
 	}
 
-	vh = vehicle.BuildVehicle(cr, fhist, record.OdometerHistory{})
+	ohist, err := tx.OdometerIncreaseRepo().GetOdometerHistory(ctx, vehicleId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get odometer history: %w", err)
+	}
+
+	vh = vehicle.BuildVehicle(cr, fhist, ohist)
 
 	return &vh, nil
 }
@@ -167,11 +171,4 @@ func (s *VehicleService[CR, FR, OR, TX]) GetVehiclesCurrent(ctx context.Context)
 	}
 
 	return vehicles, nil
-}
-
-func VehicleFromOneRecord(cr car.Car, fuelRec *record.FuelGauge, odometerRec *record.Odometer) (vehicle.Vehicle, error) {
-	return vehicle.BuildVehicle(
-		cr,
-		record.FuelGaugeHistory{History: history.NewHistory(fuelRec)},
-		record.OdometerHistory{History: history.NewHistory(odometerRec)}), nil
 }

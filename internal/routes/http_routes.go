@@ -17,5 +17,6 @@ func initViewRoutes(e *echo.Group, w *HTTPWrapper) {
 }
 
 func initAPIRoutes(e *echo.Group, w *HTTPWrapper) {
+	e.POST("/vehicles", w.CreateVehicle)
 	e.GET("/vehicles/:vehicle_id", w.GetVehicle)
 }

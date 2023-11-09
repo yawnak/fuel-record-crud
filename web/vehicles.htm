@@ -9,6 +9,7 @@
             crossorigin="anonymous"></script>
         <link rel="stylesheet" type="text/css" href="./dist/font.css">
         <link rel="icon" href="dist/icon.svg" type="image/svg+xml">
+        <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
     </head>
     <body class="bg-blue-50 min-h-screen flex flex-col">
         <header></header>
@@ -40,7 +41,7 @@
                             <td
                                 class="pl-6 pr-2 py-3 flex justify-between items-center border-r-2"
                                 hx-get="/api/vehicles/{{.ID}}"
-                                hx-swap="none">
+                                hx-target="#vehicle-records">
                                 <div class="flex">
                                     <p class="mr-1">{{.Make}}</p>
                                     <p class="mr-1">{{.Model}}</p>
@@ -65,7 +66,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="w-2/3 flex flex-col min-w-max">
+            <div id="vehicle-records" class="w-2/3 flex flex-col min-w-max">
                 <!-- Use flex-col to create a vertical flex container -->
                 <div class="flex w-full"> <!-- Horizontal flex container -->
                     <table id="fuel-records"
@@ -100,11 +101,74 @@
         </main>
         <div id="dialog"
             class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 border border-gray-300 rounded shadow-lg z-50 hidden opacity-0 transition-opacity duration-300">
-            <!-- Dialog content -->
-            <p>This is a dialog window.</p>
+            <form hx-swap="none" hx-post="/api/vehicles" id="car-creation-form">
+                <div class="flex flex-wrap -mx-4">
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Make (String) - Required -->
+                        <label for="make" class="block">Make:</label>
+                        <input type="text" id="make" name="make" required
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Model (String) - Required -->
+                        <label for="model" class="block">Model:</label>
+                        <input type="text" id="model" name="model" required
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Year (Integer) - Required -->
+                        <label for="year" class="block">Year:</label>
+                        <input type="number" id="year" name="year" required
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap -mx-4">
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Current Fuel (Float) - Optional -->
+                        <label for="current_fuel" class="block">Current Fuel:</label>
+                        <input type="number" id="current-fuel"
+                            name="current_fuel" step="0.01"
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Fuel Record Date (Date) - Optional -->
+                        <label for="fuel-record_date" class="block">Fuel Record
+                            Date:</label>
+                        <input type="date" id="fuel_record_date"
+                            name="fuel_record_date"
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap -mx-4">
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Current Odometer (Float) - Optional -->
+                        <label for="current_odometer" class="block">Current
+                            Odometer:</label>
+                        <input type="number" id="current-odometer"
+                            name="current_odometer" step="0.01"
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                    <div class="w-1/3 px-4 mb-4">
+                        <!-- Odometer Record Date (Date) - Optional -->
+                        <label for="odometer_record_date" class="block">Odometer
+                            Record Date:</label>
+                        <input type="date" id="odometer_record_date"
+                            name="odometer_record_date"
+                            class="w-full p-2 border border-gray-300 rounded">
+                    </div>
+                </div>
+
+                <button
+                    class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hover:text-white">Create
+                    Car</button>
+            </form>
+
             <button id="close-dialog-button"
-                class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hover:text-white">Close</button>
+                class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 hover:text-white">Close</button>
         </div>
+
         <script>
             const cars = document.getElementsByClassName('car-item');
             const selectCarText = document.getElementById('select-car-text');

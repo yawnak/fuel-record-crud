@@ -10,6 +10,11 @@
     "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).GetVehiclesPage-fm"
   },
   {
+    "method": "POST",
+    "path": "api/vehicles",
+    "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).CreateVehicle-fm"
+  },
+  {
     "method": "GET",
     "path": "api/vehicles/:vehicle_id",
     "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).GetVehicle-fm"

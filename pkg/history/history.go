@@ -70,3 +70,7 @@ func (history *History[H, E]) Head() H {
 	}
 	return history.list[len(history.list)-1].Copy()
 }
+
+func (history *History[H, E]) List() []H {
+	return history.list
+}
