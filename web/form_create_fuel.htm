@@ -1,0 +1,34 @@
+<div id="form-create-fuel"
+    class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 border border-gray-300 rounded shadow-lg z-50 opacity-100 transition-opacity duration-300">
+    <form hx-swap="afterbegin" hx-target="#cars" hx-post="/api/fuel-records"
+        id="fuel-record-form">
+        <div class="flex flex-wrap -mx-4">
+            <div class="w-1/2 px-4 mb-4">
+                <!-- Current Fuel Liters (Float) - Required -->
+                <label for="current_fuel_liters" class="block">Current Fuel
+                    Liters:</label>
+                <input type="number" id="current_fuel_liters"
+                    name="current_fuel_liters" step="0.01" required
+                    class="w-full p-2 border border-gray-300 rounded">
+            </div>
+            <div class="w-1/2 px-4 mb-4">
+                <!-- Fuel Record Date (Date and Time) - Required -->
+                <label for="fuel_record_date" class="block">Fuel Record Date:</label>
+                <input type="datetime-local" id="fuel_record_date"
+                    name="fuel_record_date" required
+                    class="w-full p-2 border border-gray-300 rounded">
+            </div>
+        </div>
+
+        <!-- You can keep the optional odometer fields if needed -->
+
+        <button
+            class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 hover:text-white">Create
+            Fuel Record</button>
+    </form>
+
+    <button id="close-dialog-button"
+        class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 hover:text-white"
+        onclick='var fuelForm = document.getElementById("form-create-fuel"); if (fuelForm) { fuelForm.remove(); }'
+        >Close</button>
+</div>

@@ -29,6 +29,7 @@ tasks:
     cmds:
       - echo "Seeding database..."
       - go run ./cmd/seed
+    silent: true
 
 
 

@@ -4,8 +4,21 @@
         class="table-auto w-1/2 min-w-max">
         <thead class="bg-blue-500">
             <tr>
-                <th class="px-6 py-3 text-left text-white">Fuel
-                    Gauge Records</th>
+                <th
+                    class="px-6 py-1 flex justify-between items-center  text-left text-white">
+                    <p>Fuel Gauge Records</p>
+                    <div>
+                        <button
+                            hx-get="/form/create-fuel"
+                            hx-target="#dialog-form"
+                            id="add-fuel-dialog-button"
+                            class="h-full py-2 bg-blue-600 px-7 flex items-center hover:bg-blue-800 mr-1">
+                            <i class="fas fa-plus mx-1"></i>
+                            <!-- Assuming you're using Font Awesome -->
+                            <p>Add</p>
+                        </button>
+                    </div>
+                </th>
             </tr>
         </thead>
         <tbody class="bg-white">
@@ -33,8 +46,17 @@
         <thead class="bg-blue-500">
             <tr>
                 <th
-                    class="px-6 py-3 text-left text-white min-w-max">
-                    Odometer Records
+                    class="px-6 py-1 text-left flex justify-between items-center text-white min-w-max">
+                    <p>Odometer Records</p>
+                    <button
+                        hx-get="/form/create-odometer"
+                        hx-target="#dialog-form"
+                        id="add-fuel-dialog-button"
+                        class="h-full py-2 bg-blue-600 px-7 flex items-center hover:bg-blue-800 mr-1">
+                        <i class="fas fa-plus mx-1"></i>
+                        <!-- Assuming you're using Font Awesome -->
+                        <p>Add</p>
+                    </button>
                 </th>
             </tr>
         </thead>

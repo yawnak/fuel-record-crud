@@ -10,6 +10,16 @@
     "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).GetVehiclesPage-fm"
   },
   {
+    "method": "GET",
+    "path": "/form/create-fuel",
+    "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).GetFormCreateFuel-fm"
+  },
+  {
+    "method": "GET",
+    "path": "/form/create-odometer",
+    "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).GetFormCreateOdometer-fm"
+  },
+  {
     "method": "POST",
     "path": "api/vehicles",
     "name": "github.com/yawnak/fuel-record-crud/internal/routes.(*HTTPWrapper).CreateVehicle-fm"

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/internal/domain/vehicle"
 )
 
@@ -53,4 +54,16 @@ func (c *CreateVehicleHandler) Handle(ctx context.Context, cmd CreateVehicle) (*
 	return c.vehicleCreateService.CreateVehicle(ctx, cmd.Model, cmd.Make, cmd.Year,
 		cmd.CurrentFuel, *cmd.FuelCreationTime,
 		cmd.CurrentOdometer, *cmd.OdometerCreationTime)
+}
+
+type CreateFuelRecord struct {
+	VehicleID          uuid.UUID
+	CurrentFuel        float64
+	FuelRecordDatetime time.Time
+}
+
+type CreateOdometerRecord struct {
+	VehicleID              uuid.UUID
+	CurrentOdometer        float64
+	OdometerRecordDatetime time.Time
 }
