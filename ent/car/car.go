@@ -3,8 +3,11 @@
 package car
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -12,6 +15,8 @@ const (
 	Label = "car"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "car_id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
 	// FieldMake holds the string denoting the make field in the database.
 	FieldMake = "make"
 	// FieldModel holds the string denoting the model field in the database.
@@ -47,6 +52,7 @@ const (
 // Columns holds all SQL columns for car fields.
 var Columns = []string{
 	FieldID,
+	FieldCreateTime,
 	FieldMake,
 	FieldModel,
 	FieldYear,
@@ -63,10 +69,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
 	// MakeValidator is a validator for the "make" field. It is called by the builders before save.
 	MakeValidator func(string) error
 	// ModelValidator is a validator for the "model" field. It is called by the builders before save.
 	ModelValidator func(string) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Car queries.
@@ -75,6 +85,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByCreateTime orders the results by the create_time field.
+func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
 }
 
 // ByMake orders the results by the make field.

@@ -11,6 +11,7 @@ var (
 	// CarsColumns holds the columns for the "cars" table.
 	CarsColumns = []*schema.Column{
 		{Name: "car_id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
 		{Name: "make", Type: field.TypeString},
 		{Name: "model", Type: field.TypeString},
 		{Name: "year", Type: field.TypeInt32},
@@ -40,7 +41,7 @@ var (
 				Symbol:     "fuel_records_cars_fuel_records",
 				Columns:    []*schema.Column{FuelRecordsColumns[4]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "fuel_records_fuel_records_prev",
@@ -69,7 +70,7 @@ var (
 				Symbol:     "odometer_records_cars_odometer_records",
 				Columns:    []*schema.Column{OdometerRecordsColumns[4]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "odometer_records_odometer_records_prev",

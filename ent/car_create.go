@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -20,6 +21,20 @@ type CarCreate struct {
 	config
 	mutation *CarMutation
 	hooks    []Hook
+}
+
+// SetCreateTime sets the "create_time" field.
+func (cc *CarCreate) SetCreateTime(t time.Time) *CarCreate {
+	cc.mutation.SetCreateTime(t)
+	return cc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (cc *CarCreate) SetNillableCreateTime(t *time.Time) *CarCreate {
+	if t != nil {
+		cc.SetCreateTime(*t)
+	}
+	return cc
 }
 
 // SetMake sets the "make" field.
@@ -43,6 +58,14 @@ func (cc *CarCreate) SetYear(i int32) *CarCreate {
 // SetID sets the "id" field.
 func (cc *CarCreate) SetID(u uuid.UUID) *CarCreate {
 	cc.mutation.SetID(u)
+	return cc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (cc *CarCreate) SetNillableID(u *uuid.UUID) *CarCreate {
+	if u != nil {
+		cc.SetID(*u)
+	}
 	return cc
 }
 
@@ -83,6 +106,7 @@ func (cc *CarCreate) Mutation() *CarMutation {
 
 // Save creates the Car in the database.
 func (cc *CarCreate) Save(ctx context.Context) (*Car, error) {
+	cc.defaults()
 	return withHooks(ctx, cc.sqlSave, cc.mutation, cc.hooks)
 }
 
@@ -108,8 +132,23 @@ func (cc *CarCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (cc *CarCreate) defaults() {
+	if _, ok := cc.mutation.CreateTime(); !ok {
+		v := car.DefaultCreateTime()
+		cc.mutation.SetCreateTime(v)
+	}
+	if _, ok := cc.mutation.ID(); !ok {
+		v := car.DefaultID()
+		cc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (cc *CarCreate) check() error {
+	if _, ok := cc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Car.create_time"`)}
+	}
 	if _, ok := cc.mutation.Make(); !ok {
 		return &ValidationError{Name: "make", err: errors.New(`ent: missing required field "Car.make"`)}
 	}
@@ -163,6 +202,10 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 	if id, ok := cc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := cc.mutation.CreateTime(); ok {
+		_spec.SetField(car.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
 	}
 	if value, ok := cc.mutation.Make(); ok {
 		_spec.SetField(car.FieldMake, field.TypeString, value)
@@ -229,6 +272,7 @@ func (ccb *CarCreateBulk) Save(ctx context.Context) ([]*Car, error) {
 	for i := range ccb.builders {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*CarMutation)
 				if !ok {

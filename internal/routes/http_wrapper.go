@@ -159,9 +159,13 @@ func (w *HTTPWrapper) CreateVehicle(c echo.Context) error {
 	fmt.Println("REQUEST:", "CAR:", request.Model, request.Make, request.Year,
 		"\nFUEL:", lo.FromPtr(request.CurrentFuel), lo.FromPtr(request.FuelCreationTime),
 		"\nODOMETER:", lo.FromPtr(request.CurrentOdometer), lo.FromPtr(request.OdometerCreationTime))
-	return nil
-	w.app.Commands.Vehicle.Create.Handle(ctx, request.ToCmd())
+	vehicle, err := w.app.Commands.Vehicle.Create.Handle(ctx, request.ToCmd())
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		return c.JSON(http.StatusInternalServerError, err)
+	}
 
-	_ = ctx
+	_ = vehicle
+
 	return nil
 }

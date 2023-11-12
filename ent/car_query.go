@@ -335,12 +335,12 @@ func (cq *CarQuery) WithOdometerRecords(opts ...func(*OdometerRecordQuery)) *Car
 // Example:
 //
 //	var v []struct {
-//		Make string `json:"make,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Car.Query().
-//		GroupBy(car.FieldMake).
+//		GroupBy(car.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (cq *CarQuery) GroupBy(field string, fields ...string) *CarGroupBy {
@@ -358,11 +358,11 @@ func (cq *CarQuery) GroupBy(field string, fields ...string) *CarGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Make string `json:"make,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Car.Query().
-//		Select(car.FieldMake).
+//		Select(car.FieldCreateTime).
 //		Scan(ctx, &v)
 func (cq *CarQuery) Select(fields ...string) *CarSelect {
 	cq.ctx.Fields = append(cq.ctx.Fields, fields...)

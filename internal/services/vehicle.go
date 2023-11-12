@@ -91,6 +91,10 @@ func (s *VehicleService[CR, FR, OR, TX]) CreateVehicle(
 		return nil, fmt.Errorf("failed to create fuel gauge record: %w", err)
 	}
 
+	if err := tx.OdometerIncreaseRepo().CreateOdometerRecord(ctx, vh.Car().Id(), vh.OdometerHistory().Head()); err != nil {
+		return nil, fmt.Errorf("failed to create odometer record: %w", err)
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)

@@ -59,3 +59,20 @@ func (repo *OdometerRecordRepoPSQL) GetOdometerHistory(ctx context.Context, carI
 		History: history.UnmarshalHistory(res),
 	}, nil
 }
+
+func (repo *OdometerRecordRepoPSQL) CreateOdometerRecord(ctx context.Context, carId uuid.UUID, odometer *record.Odometer) error {
+	if odometer == nil {
+		return nil
+	}
+	_, err := repo.client.Create().
+		SetID(odometer.Event().Id()).
+		SetCurrentKilometers(odometer.Event().CurrentKilometers()).
+		SetDifference(odometer.Event().DifferenceKilometers()).
+		SetCreatedAt(odometer.Event().CreatedAt()).
+		SetCarID(carId).Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

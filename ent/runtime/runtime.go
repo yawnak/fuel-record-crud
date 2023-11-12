@@ -4,6 +4,7 @@ package runtime
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/yawnak/fuel-record-crud/ent/car"
@@ -19,8 +20,15 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	carMixin := schema.Car{}.Mixin()
+	carMixinFields0 := carMixin[0].Fields()
+	_ = carMixinFields0
 	carFields := schema.Car{}.Fields()
 	_ = carFields
+	// carDescCreateTime is the schema descriptor for create_time field.
+	carDescCreateTime := carMixinFields0[0].Descriptor()
+	// car.DefaultCreateTime holds the default value on creation for the create_time field.
+	car.DefaultCreateTime = carDescCreateTime.Default.(func() time.Time)
 	// carDescMake is the schema descriptor for make field.
 	carDescMake := carFields[1].Descriptor()
 	// car.MakeValidator is a validator for the "make" field. It is called by the builders before save.
@@ -29,6 +37,10 @@ func init() {
 	carDescModel := carFields[2].Descriptor()
 	// car.ModelValidator is a validator for the "model" field. It is called by the builders before save.
 	car.ModelValidator = carDescModel.Validators[0].(func(string) error)
+	// carDescID is the schema descriptor for id field.
+	carDescID := carFields[0].Descriptor()
+	// car.DefaultID holds the default value on creation for the id field.
+	car.DefaultID = carDescID.Default.(func() uuid.UUID)
 	fuelrecord.Policy = privacy.NewPolicies(schema.FuelRecord{})
 	fuelrecord.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {

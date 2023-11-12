@@ -38,6 +38,7 @@ type CarMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
+	create_time             *time.Time
 	make                    *string
 	model                   *string
 	year                    *int32
@@ -156,6 +157,42 @@ func (m *CarMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *CarMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *CarMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the Car entity.
+// If the Car object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CarMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *CarMutation) ResetCreateTime() {
+	m.create_time = nil
 }
 
 // SetMake sets the "make" field.
@@ -428,7 +465,10 @@ func (m *CarMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CarMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.create_time != nil {
+		fields = append(fields, car.FieldCreateTime)
+	}
 	if m.make != nil {
 		fields = append(fields, car.FieldMake)
 	}
@@ -446,6 +486,8 @@ func (m *CarMutation) Fields() []string {
 // schema.
 func (m *CarMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case car.FieldCreateTime:
+		return m.CreateTime()
 	case car.FieldMake:
 		return m.Make()
 	case car.FieldModel:
@@ -461,6 +503,8 @@ func (m *CarMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *CarMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case car.FieldCreateTime:
+		return m.OldCreateTime(ctx)
 	case car.FieldMake:
 		return m.OldMake(ctx)
 	case car.FieldModel:
@@ -476,6 +520,13 @@ func (m *CarMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *CarMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case car.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
 	case car.FieldMake:
 		v, ok := value.(string)
 		if !ok {
@@ -561,6 +612,9 @@ func (m *CarMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *CarMutation) ResetField(name string) error {
 	switch name {
+	case car.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
 	case car.FieldMake:
 		m.ResetMake()
 		return nil

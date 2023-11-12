@@ -13,7 +13,7 @@ func (ct *DateTime) UnmarshalParam(param string) error {
 	if param == "" {
 		return nil
 	}
-	t, err := time.Parse(time.DateOnly, param)
+	t, err := time.Parse("2006-01-02T15:04", param)
 	if err != nil {
 		return err
 	}
@@ -26,9 +26,9 @@ type CreateVehicle struct {
 	Model                string    `form:"model"`
 	Year                 int32     `form:"year"`
 	CurrentFuel          *float64  `form:"current_fuel"`
-	FuelCreationTime     *DateTime `form:"fuel_record_date"`
+	FuelCreationTime     *DateTime `form:"fuel_record_date"` // 2006-01-02T15:04
 	CurrentOdometer      *float64  `form:"current_odometer"`
-	OdometerCreationTime *DateTime `form:"odometer_record_date"`
+	OdometerCreationTime *DateTime `form:"odometer_record_date"` // 2006-01-02T15:04
 }
 
 func (req *CreateVehicle) ToCmd() command.CreateVehicle {

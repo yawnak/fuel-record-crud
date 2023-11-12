@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -17,6 +18,8 @@ type Car struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
 	// Make holds the value of the "make" field.
 	Make string `json:"make,omitempty"`
 	// Model holds the value of the "model" field.
@@ -67,6 +70,8 @@ func (*Car) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case car.FieldMake, car.FieldModel:
 			values[i] = new(sql.NullString)
+		case car.FieldCreateTime:
+			values[i] = new(sql.NullTime)
 		case car.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -89,6 +94,12 @@ func (c *Car) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				c.ID = *value
+			}
+		case car.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				c.CreateTime = value.Time
 			}
 		case car.FieldMake:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -154,6 +165,9 @@ func (c *Car) String() string {
 	var builder strings.Builder
 	builder.WriteString("Car(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(c.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("make=")
 	builder.WriteString(c.Make)
 	builder.WriteString(", ")

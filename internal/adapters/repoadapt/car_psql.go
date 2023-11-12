@@ -3,10 +3,12 @@ package repoadapt
 import (
 	"context"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/samber/lo"
 	"github.com/yawnak/fuel-record-crud/ent"
+	entcar "github.com/yawnak/fuel-record-crud/ent/car"
 	"github.com/yawnak/fuel-record-crud/internal/domain/car"
 )
 
@@ -61,7 +63,7 @@ func (repo *CarRepositoryPSQL) GetCar(ctx context.Context, id uuid.UUID) (car.Ca
 }
 
 func (repo *CarRepositoryPSQL) QueryCars(ctx context.Context) ([]car.Car, error) {
-	getCars, err := repo.client.Query().All(ctx)
+	getCars, err := repo.client.Query().Order(entcar.ByCreateTime(sql.OrderDesc())).All(ctx)
 	if err != nil {
 		return nil, err
 	}

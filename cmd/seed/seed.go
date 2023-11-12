@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/samber/lo"
 	"github.com/yawnak/fuel-record-crud/ent"
+	"github.com/yawnak/fuel-record-crud/ent/car"
 	_ "github.com/yawnak/fuel-record-crud/ent/runtime"
 )
 
@@ -17,12 +20,30 @@ func main() {
 	repo := initRepo()
 
 	ctx := context.Background()
+	clearVehicles(ctx, repo)
 	seedVehicles(ctx, repo)
+}
+
+func clearVehicles(ctx context.Context, client *ent.Client) {
+	selectIds := client.Car.Query().Select(car.FieldID).StringsX(ctx)
+	ids := lo.Map(selectIds, func(id string, _ int) uuid.UUID {
+		return uuid.MustParse(id)
+	})
+	fmt.Printf("found %d cars in db. Deleting...\n", len(ids))
+	for _, u := range ids {
+		client.Car.DeleteOneID(u).ExecX(ctx)
+	}
+	fmt.Println("done deleting.")
 }
 
 func seedVehicles(ctx context.Context, client *ent.Client) {
 	id := uuid.New()
 	client.Car.Create().SetID(id).SetModel("Toyota").SetMake("NO RECORDS").SetYear(2010).SaveX(ctx)
+	client.Car.Create().SetModel("Toyota").SetMake("NO RECORDS").SetYear(2010).SaveX(ctx)
+	client.Car.Create().SetModel("Toyota").SetMake("NO RECORDS").SetYear(2010).SaveX(ctx)
+	client.Car.Create().SetModel("Toyota").SetMake("NO RECORDS").SetYear(2010).SaveX(ctx)
+	client.Car.Create().SetModel("Toyota").SetMake("NO RECORDS").SetYear(2010).SaveX(ctx)
+	client.Car.Create().SetModel("Toyota").SetMake("NO RECORDS").SetYear(2010).SaveX(ctx)
 	//mercedes
 	id = uuid.New()
 	client.Car.Create().SetID(id).SetModel("Mercedes").SetMake("FUEL RECORD").SetYear(2015).SaveX(ctx)

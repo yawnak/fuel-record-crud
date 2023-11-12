@@ -25,7 +25,7 @@ type FuelGaugeRepo interface {
 }
 
 type OdometerRepo interface {
-	//CreateOdometerRecord(ctx context.Context, carId uuid.UUID, odometer *Odometer) error
+	CreateOdometerRecord(ctx context.Context, carId uuid.UUID, odometer *Odometer) error
 	QueryLastOdometerRecords(ctx context.Context) (map[string]Odometer, error)
 	GetOdometerHistory(ctx context.Context, vehicleId uuid.UUID) (OdometerHistory, error)
 }
